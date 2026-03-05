@@ -67,14 +67,41 @@
         .wb-wip { background: #eab308; }
         .wb-rew { background: #ef4444; }
         .avatar { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #3b82f6; color: white; border-radius: 50%; font-size: 10px; font-weight: bold; margin-right: 8px;}
+
+        /* RESOURCE STYLING */
+        .resource-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .resource-menu { display: flex; flex-direction: column; gap: 10px; }
+        .res-btn { padding: 15px; text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; color: #334155; transition: 0.2s;}
+        .res-btn:hover, .res-btn.active { background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; }
+        .res-content-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; display: none;}
+        .res-content-box.active { display: block;}
+        .res-content-box h3 { margin-top: 0; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
+        .res-content-box h4 { color: #3b82f6; margin-bottom: 5px;}
+        .res-content-box p, .res-content-box li { font-size: 13px; color: #475569; line-height: 1.6;}
+
+        /* MODAL STYLING */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-content h3 { margin-top: 0; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .dept-group { margin-bottom: 15px; }
+        .dept-group label { display: block; font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 5px; }
+        .dept-group input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
+        .btn-save { background: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-save:hover { background: #059669; }
+        .btn-close { background: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .edit-team-btn { background: #1e293b; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 15px; font-size: 13px; }
+        .edit-team-btn:hover { background: #334155; }
     </style>
 </head>
 <body>
 
     <div class="section-header">
         <h2>Chiranjeevi Hanuman - LIVE PRODUCTION HUB</h2>
-        <div class="sync-status">
-            <span class="sync-dot"></span> <span id="syncText">Live Sync Active</span>
+        <div style="display: flex; align-items: center;">
+            <div class="sync-status">
+                <span class="sync-dot"></span> <span id="syncText">Live Sync Active</span>
+            </div>
+            <button class="edit-team-btn" onclick="openSettings()">⚙️ Default Teams</button>
         </div>
     </div>
 
@@ -102,6 +129,7 @@
         <button class="tab" onclick="switchTab('locations', this)">🌍 Worlds & Locations</button>
         <button class="tab" onclick="switchTab('team', this)">🧑‍💻 Team Workload</button>
         <button class="tab" onclick="switchTab('schedule', this)" style="color:#059669;">📅 Daily Schedule</button>
+        <button class="tab" onclick="switchTab('resources', this)" style="color:#b91c1c;">📚 Resources & Workflows</button>
     </div>
 
     <div id="funnel" class="tab-content active">
@@ -161,16 +189,113 @@
         </table>
     </div>
 
+    <div id="resources" class="tab-content">
+        <div class="resource-grid">
+            <div class="resource-menu">
+                <button class="res-btn active" onclick="switchRes('res-comp', this)">🎬 Location & Compositing Workflow</button>
+                <button class="res-btn" onclick="switchRes('res-3d', this)">🦸‍♂️ 3D Character Modeling Guide</button>
+                <button class="res-btn" onclick="switchRes('res-ai', this)">🤖 AI Film Production Matrix</button>
+            </div>
+            
+            <div class="resource-content">
+                <div id="res-comp" class="res-content-box active">
+                    <h3>Location & Compositing Pipeline</h3>
+                    <h4>1. Foundations of Compositing</h4>
+                    <ul>
+                        <li>Combine 2D and 3D elements seamlessly.</li>
+                        <li>Match color, lighting, perspective, and grain to live-action.</li>
+                        <li>Software: Nuke, After Effects.</li>
+                    </ul>
+                    <h4>2. Slap Comps (WIP)</h4>
+                    <p>Fast, rough composites used for internal reviews to validate AI BGs and test timing. Step-by-Step:</p>
+                    <ol>
+                        <li><b>Import Plate:</b> Basic color space setup (ACES/linear).</li>
+                        <li><b>AI Elements:</b> Check alignment, shadows, grounding, and motion blur.</li>
+                        <li><b>Basic Layering:</b> Over/under placement.</li>
+                    </ol>
+                    <h4>3. Final Compositing Steps</h4>
+                    <ul>
+                        <li><b>Depth & Atmosphere:</b> Add depth haze, Z-defocus, fog volumes, light rays.</li>
+                        <li><b>FX Integration:</b> Smoke, fire, rain, magic glows.</li>
+                        <li><b>Edge Work:</b> Multi-pass keying, edge blending, spill suppression.</li>
+                        <li><b>Global Look:</b> Final grain pass, interactive lighting, EXR Delivery.</li>
+                    </ul>
+                </div>
+
+                <div id="res-3d" class="res-content-box">
+                    <h3>3D Character Modeling Guide</h3>
+                    <h4>Base Mesh & Topology</h4>
+                    <ul>
+                        <li>Avoid overly dense topology (Keep it AI-Friendly).</li>
+                        <li>Maintain clean edge loops around Eyes, Mouth, Nasolabial fold, Shoulders, Knees.</li>
+                        <li><b>Face Rules:</b> Circular loops around eyes, radial flow around mouth. No stretched polygons.</li>
+                    </ul>
+                    <h4>Hair & Cloth Creation</h4>
+                    <ul>
+                        <li><b>Hair:</b> Add haircards for long hair to allow manual rigging/animation if AI fails. Avoid triangles.</li>
+                        <li><b>Cloth:</b> Avoid single mesh creation. Make separate parts for cloths to prevent distortion during animation.</li>
+                    </ul>
+                    <h4>Sculpting & Texturing for Semi-Realism</h4>
+                    <ul>
+                        <li>Avoid hyper-real skin pores. Add subtle cheek fat pads, soft eyelid thickness.</li>
+                        <li><b>Textures:</b> Use subtle roughness. High-res iris texture. Clean alpha edges for hair cards.</li>
+                    </ul>
+                </div>
+
+                <div id="res-ai" class="res-content-box">
+                    <h3>AI Film Production Matrix</h3>
+                    <table style="min-width: 100%; font-size: 12px; border: 1px solid #e2e8f0; margin-top: 15px;">
+                        <tr style="background:#e2e8f0;"><th>Feature</th><th>Pure AI (Runway/Pika)</th><th>Hybrid (ComfyUI)</th><th>Unreal Engine + AI</th></tr>
+                        <tr><td><b>Input Source</b></td><td>Storyboard Video</td><td>Storyboard Video</td><td>Storyboard Video</td></tr>
+                        <tr><td><b>Speed</b></td><td>Fast</td><td>Medium</td><td>Slow (Pre-prod heavy)</td></tr>
+                        <tr><td><b>Location Continuity</b></td><td>Low/Medium</td><td>High</td><td>Perfect / Accurate</td></tr>
+                        <tr><td><b>Character Assets</b></td><td>AI Generated 2D</td><td>AI Generated 2D</td><td>3D Modeled</td></tr>
+                        <tr><td><b>Comp Effort</b></td><td>High (On the fly fixes)</td><td>Medium</td><td>Low (Assets fit precisely)</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Team Roster Settings</h3>
+            <p style="font-size: 12px; color: #64748b;">Separate names with commas (e.g., John, Sarah, Mike). These default teams will appear in your workload tracker.</p>
+            
+            <div class="dept-group"><label>🎨 Storyboard / Arts Team:</label><input type="text" id="input-arts"></div>
+            <div class="dept-group"><label>🌍 3D World / Locations Team:</label><input type="text" id="input-world"></div>
+            <div class="dept-group"><label>🖌️ 2D Statics Team:</label><input type="text" id="input-statics"></div>
+            <div class="dept-group"><label>🦸‍♂️ 3D Character Assets Team:</label><input type="text" id="input-assets"></div>
+            <div class="dept-group"><label>🏃‍♂️ 3D Animation / Motion Team:</label><input type="text" id="input-anim"></div>
+            <div class="dept-group"><label>🎬 MoCap / Management Team:</label><input type="text" id="input-mocap"></div>
+            <div class="dept-group"><label>💻 Recompositing Team:</label><input type="text" id="input-comp"></div>
+
+            <button class="btn-save" onclick="saveSettings()">Save Configuration</button>
+            <button class="btn-close" onclick="closeSettings()">Cancel</button>
+        </div>
+    </div>
+
     <script>
-        // EXACT GOOGLE SHEET LINKS
-        const scenesCsvUrl = "https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=0"; 
+        // EXACT GOOGLE SHEET LINKS (Updated with the new Scene Database link)
+        const scenesCsvUrl = "https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=323715213"; 
         const assetsCsvUrl = "https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=366020038"; 
         const locationsCsvUrl = "https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340"; 
 
+        // --- DATE & UI HELPERS ---
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
+        
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function switchRes(resId, btnElement) {
+            document.querySelectorAll('.res-content-box').forEach(box => box.classList.remove('active'));
+            document.querySelectorAll('.res-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(resId).classList.add('active');
             btnElement.classList.add('active');
         }
 
@@ -181,19 +306,60 @@
             }
         }
 
-        // UPGRADED VISUAL BADGE GENERATOR
+        // --- TEAM SETTINGS MODAL ---
+        const defaultTeam = {
+            arts: ["Lokesh", "Reshma", "Vignesh", "Sedevito", "Amith", "Sai"], 
+            world: ["Soumya Ranjan", "Joel M", "Colin L", "Srimegha", "Joel S"], 
+            statics: ["Jacob Charles", "Abin Jilson", "Sai Charan", "Khaleel", "Pavan Kumar", "Bhargavi", "Sravan", "Veena", "Mabika", "Sandra", "Rakesh", "Anand"], 
+            assets: ["Shivang Arya", "Deep P", "Adithyan", "Karthik", "Sumit"], 
+            anim: ["Kirtan Mali", "Rishav M", "Ugur", "Tejas", "Devi"], 
+            mocap: ["Ankur", "Saiful", "Hari", "Prajwal"], 
+            comp: ["Lokesh", "Reshma", "Vignesh", "Jacob Charles", "Abin Jilson"] 
+        };
+
+        let teamMembers = JSON.parse(localStorage.getItem('vfxTeamRoster')) || defaultTeam;
+
+        function openSettings() {
+            document.getElementById('input-arts').value = teamMembers.arts.join(", ");
+            document.getElementById('input-world').value = teamMembers.world.join(", ");
+            document.getElementById('input-statics').value = teamMembers.statics.join(", ");
+            document.getElementById('input-assets').value = teamMembers.assets.join(", ");
+            document.getElementById('input-anim').value = teamMembers.anim.join(", ");
+            document.getElementById('input-mocap').value = teamMembers.mocap.join(", ");
+            document.getElementById('input-comp').value = teamMembers.comp.join(", ");
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function saveSettings() {
+            const parseNames = (val) => val.split(',').map(s => s.trim()).filter(s => s.length > 0 && s.toLowerCase() !== "unassigned");
+            teamMembers.arts = parseNames(document.getElementById('input-arts').value);
+            teamMembers.world = parseNames(document.getElementById('input-world').value);
+            teamMembers.statics = parseNames(document.getElementById('input-statics').value);
+            teamMembers.assets = parseNames(document.getElementById('input-assets').value);
+            teamMembers.anim = parseNames(document.getElementById('input-anim').value);
+            teamMembers.mocap = parseNames(document.getElementById('input-mocap').value);
+            teamMembers.comp = parseNames(document.getElementById('input-comp').value);
+
+            localStorage.setItem('vfxTeamRoster', JSON.stringify(teamMembers));
+            closeSettings();
+            location.reload(); 
+        }
+
+        // --- VISUAL BADGE GENERATORS ---
         function getBadgeHTML(status, dateStr, assignee) {
             let text = (status || "").trim();
             let dateHtml = dateStr ? `<span class="target-date">${dateStr}</span>` : '';
             
-            // This is the new "Visual Debugger". It will always show Unassigned if the cell is blank.
+            // Visual Debugger: Always show Unassigned if the cell is blank.
             let cleanAssign = (assignee || "").trim();
             let assignHtml = "";
             if (cleanAssign && cleanAssign.toLowerCase() !== "unassigned") {
-                // Found a valid name! Show in Blue
                 assignHtml = `<br><span class="assignee-label" style="color:#2563eb; background:#eff6ff; padding:3px 6px; border-radius:6px; border:1px solid #bfdbfe;">👤 ${cleanAssign}</span>`;
             } else {
-                // Nothing found in Google Sheet. Show Gray 'Unassigned'
                 assignHtml = `<br><span class="assignee-label" style="color:#94a3b8; font-weight:normal;">👤 Unassigned</span>`;
             }
 
@@ -247,6 +413,15 @@
                 let teamWorkload = {};
                 let dailyScheduleTasks = [];
 
+                // Pre-populate with default team so empty trackers show up
+                Object.keys(teamMembers).forEach(deptKey => {
+                    teamMembers[deptKey].forEach(name => {
+                        if (name !== "Unassigned" && !teamWorkload[name]) {
+                            teamWorkload[name] = { total: 0, done: 0, wip: 0, rew: 0, dept: deptKey };
+                        }
+                    });
+                });
+
                 function logTask(name, status, dateStr, dept, taskText) {
                     if (!name || name.trim() === "" || name.trim().toLowerCase() === "unassigned") return;
                     let cleanName = name.trim();
@@ -285,7 +460,6 @@
                     let st = (row['Final Status'] || "").toLowerCase();
                     if (st === 'done' || st === 'ready') counts.wd.done++;
 
-                    // Note: We check multiple possible column names to avoid spreadsheet errors
                     let refAssign = row['References Assignee'] || row['Reference Assignee'];
                     let aiAssign = row['AI Assignee'] || row['AI Asset Assignee'];
                     let scaleAssign = row['3D Scaling Assignee'] || row['Scaling Assignee'];
@@ -388,8 +562,6 @@
                         if(rLow === 'done') counts.rc.done++; else if(rLow === 'wip') counts.rc.wip++; else if(rLow === 'rework') counts.rc.rew++;
 
                         let shNameText = `Scene ${scNum} / Shot ${shNum}`;
-                        
-                        // Check both variations of the column names just in case!
                         let asAssignee = row['3D Assignee'] || row['3D Assets Assignee'];
                         let rcAssignee = row['Recomp Assignee'] || row['Recompositing Assignee'];
 
@@ -480,7 +652,7 @@
                         <td style="text-align: left; font-weight: 600; color: #0f172a;">
                             <span class="avatar">${initial}</span> ${name}
                         </td>
-                        <td><span style="font-size:10px; color:#64748b; font-weight:bold; text-transform:uppercase;">${w.dept}</span></td>
+                        <td><span style="font-size:10px; color:#64748b; font-weight:bold; text-transform:uppercase;">${w.dept || "-"}</span></td>
                         <td><strong style="font-size: 16px;">${w.total}</strong></td>
                         <td style="color: #059669; font-weight: bold;">${w.done}</td>
                         <td style="color: #d97706; font-weight: bold;">${w.wip}</td>
