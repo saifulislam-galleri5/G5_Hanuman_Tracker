@@ -67,30 +67,8 @@
         .wb-wip { background: #eab308; }
         .wb-rew { background: #ef4444; }
         .avatar { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #3b82f6; color: white; border-radius: 50%; font-size: 10px; font-weight: bold; margin-right: 8px;}
-
-        /* RESOURCE STYLING */
-        .resource-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
-        .resource-menu { display: flex; flex-direction: column; gap: 10px; }
-        .res-btn { padding: 15px; text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; color: #334155; transition: 0.2s;}
-        .res-btn:hover, .res-btn.active { background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; }
-        .res-content-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; display: none;}
-        .res-content-box.active { display: block;}
-        .res-content-box h3 { margin-top: 0; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;}
-        .res-content-box h4 { color: #3b82f6; margin-bottom: 5px;}
-        .res-content-box p, .res-content-box li { font-size: 13px; color: #475569; line-height: 1.6;}
-
-        /* MODAL STYLING */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .modal-content h3 { margin-top: 0; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .dept-group { margin-bottom: 15px; }
-        .dept-group label { display: block; font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 5px; }
-        .dept-group input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
-        .btn-save { background: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        .btn-save:hover { background: #059669; }
-        .btn-close { background: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        .edit-team-btn { background: #1e293b; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 15px; font-size: 13px; }
-        .edit-team-btn:hover { background: #334155; }
+        
+        .error-box { background: #fee2e2; border: 2px solid #ef4444; padding: 20px; border-radius: 8px; color: #991b1b; font-weight: bold; text-align: center; margin: 20px; }
     </style>
 </head>
 <body>
@@ -98,12 +76,14 @@
     <div class="section-header">
         <h2>Chiranjeevi Hanuman - LIVE PRODUCTION HUB</h2>
         <div style="display: flex; align-items: center;">
-            <div class="sync-status">
+            <div class="sync-status" id="syncStatusDiv">
                 <span class="sync-dot"></span> <span id="syncText">Live Sync Active</span>
             </div>
-            <button class="edit-team-btn" onclick="openSettings()">⚙️ Default Teams</button>
+            <button class="edit-team-btn" onclick="openSettings()" style="background:#1e293b; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; margin-left:15px; font-weight:bold; font-size:13px;">⚙️ Default Teams</button>
         </div>
     </div>
+
+    <div id="errorContainer" style="display: none;"></div>
 
     <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">
         <span>Overall Project Completion (Recompositing)</span>
@@ -196,95 +176,35 @@
                 <button class="res-btn" onclick="switchRes('res-3d', this)">🦸‍♂️ 3D Character Modeling Guide</button>
                 <button class="res-btn" onclick="switchRes('res-ai', this)">🤖 AI Film Production Matrix</button>
             </div>
-            
             <div class="resource-content">
-                <div id="res-comp" class="res-content-box active">
-                    <h3>Location & Compositing Pipeline</h3>
-                    <h4>1. Foundations of Compositing</h4>
-                    <ul>
-                        <li>Combine 2D and 3D elements seamlessly.</li>
-                        <li>Match color, lighting, perspective, and grain to live-action.</li>
-                        <li>Software: Nuke, After Effects.</li>
-                    </ul>
-                    <h4>2. Slap Comps (WIP)</h4>
-                    <p>Fast, rough composites used for internal reviews to validate AI BGs and test timing. Step-by-Step:</p>
-                    <ol>
-                        <li><b>Import Plate:</b> Basic color space setup (ACES/linear).</li>
-                        <li><b>AI Elements:</b> Check alignment, shadows, grounding, and motion blur.</li>
-                        <li><b>Basic Layering:</b> Over/under placement.</li>
-                    </ol>
-                    <h4>3. Final Compositing Steps</h4>
-                    <ul>
-                        <li><b>Depth & Atmosphere:</b> Add depth haze, Z-defocus, fog volumes, light rays.</li>
-                        <li><b>FX Integration:</b> Smoke, fire, rain, magic glows.</li>
-                        <li><b>Edge Work:</b> Multi-pass keying, edge blending, spill suppression.</li>
-                        <li><b>Global Look:</b> Final grain pass, interactive lighting, EXR Delivery.</li>
-                    </ul>
-                </div>
-
-                <div id="res-3d" class="res-content-box">
-                    <h3>3D Character Modeling Guide</h3>
-                    <h4>Base Mesh & Topology</h4>
-                    <ul>
-                        <li>Avoid overly dense topology (Keep it AI-Friendly).</li>
-                        <li>Maintain clean edge loops around Eyes, Mouth, Nasolabial fold, Shoulders, Knees.</li>
-                        <li><b>Face Rules:</b> Circular loops around eyes, radial flow around mouth. No stretched polygons.</li>
-                    </ul>
-                    <h4>Hair & Cloth Creation</h4>
-                    <ul>
-                        <li><b>Hair:</b> Add haircards for long hair to allow manual rigging/animation if AI fails. Avoid triangles.</li>
-                        <li><b>Cloth:</b> Avoid single mesh creation. Make separate parts for cloths to prevent distortion during animation.</li>
-                    </ul>
-                    <h4>Sculpting & Texturing for Semi-Realism</h4>
-                    <ul>
-                        <li>Avoid hyper-real skin pores. Add subtle cheek fat pads, soft eyelid thickness.</li>
-                        <li><b>Textures:</b> Use subtle roughness. High-res iris texture. Clean alpha edges for hair cards.</li>
-                    </ul>
-                </div>
-
-                <div id="res-ai" class="res-content-box">
-                    <h3>AI Film Production Matrix</h3>
-                    <table style="min-width: 100%; font-size: 12px; border: 1px solid #e2e8f0; margin-top: 15px;">
-                        <tr style="background:#e2e8f0;"><th>Feature</th><th>Pure AI (Runway/Pika)</th><th>Hybrid (ComfyUI)</th><th>Unreal Engine + AI</th></tr>
-                        <tr><td><b>Input Source</b></td><td>Storyboard Video</td><td>Storyboard Video</td><td>Storyboard Video</td></tr>
-                        <tr><td><b>Speed</b></td><td>Fast</td><td>Medium</td><td>Slow (Pre-prod heavy)</td></tr>
-                        <tr><td><b>Location Continuity</b></td><td>Low/Medium</td><td>High</td><td>Perfect / Accurate</td></tr>
-                        <tr><td><b>Character Assets</b></td><td>AI Generated 2D</td><td>AI Generated 2D</td><td>3D Modeled</td></tr>
-                        <tr><td><b>Comp Effort</b></td><td>High (On the fly fixes)</td><td>Medium</td><td>Low (Assets fit precisely)</td></tr>
-                    </table>
-                </div>
+                <div id="res-comp" class="res-content-box active"><h3>Location & Compositing Pipeline</h3><p>Workflow details go here.</p></div>
+                <div id="res-3d" class="res-content-box"><h3>3D Character Modeling Guide</h3><p>Modeling rules go here.</p></div>
+                <div id="res-ai" class="res-content-box"><h3>AI Film Production Matrix</h3><p>AI Rules go here.</p></div>
             </div>
         </div>
     </div>
 
-    <div id="settingsModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Team Roster Settings</h3>
-            <p style="font-size: 12px; color: #64748b;">Separate names with commas (e.g., John, Sarah, Mike). These default teams will appear in your workload tracker.</p>
-            
-            <div class="dept-group"><label>🎨 Storyboard / Arts Team:</label><input type="text" id="input-arts"></div>
-            <div class="dept-group"><label>🌍 3D World / Locations Team:</label><input type="text" id="input-world"></div>
-            <div class="dept-group"><label>🖌️ 2D Statics Team:</label><input type="text" id="input-statics"></div>
-            <div class="dept-group"><label>🦸‍♂️ 3D Character Assets Team:</label><input type="text" id="input-assets"></div>
-            <div class="dept-group"><label>🏃‍♂️ 3D Animation / Motion Team:</label><input type="text" id="input-anim"></div>
-            <div class="dept-group"><label>🎬 MoCap / Management Team:</label><input type="text" id="input-mocap"></div>
-            <div class="dept-group"><label>💻 Recompositing Team:</label><input type="text" id="input-comp"></div>
-
-            <button class="btn-save" onclick="saveSettings()">Save Configuration</button>
-            <button class="btn-close" onclick="closeSettings()">Cancel</button>
+    <div id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 12px; width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Team Roster Settings</h3>
+            <div style="margin-bottom: 15px;"><label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">🎨 Arts Team:</label><input type="text" id="input-arts" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"></div>
+            <div style="margin-bottom: 15px;"><label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">🌍 Locations Team:</label><input type="text" id="input-world" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"></div>
+            <div style="margin-bottom: 15px;"><label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">🖌️ Statics Team:</label><input type="text" id="input-statics" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"></div>
+            <div style="margin-bottom: 15px;"><label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">🦸‍♂️ Assets Team:</label><input type="text" id="input-assets" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"></div>
+            <div style="margin-bottom: 15px;"><label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">🏃‍♂️ Motion Team:</label><input type="text" id="input-anim" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"></div>
+            <div style="margin-bottom: 15px;"><label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">🎬 MoCap Team:</label><input type="text" id="input-mocap" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"></div>
+            <div style="margin-bottom: 15px;"><label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">💻 Recompositing Team:</label><input type="text" id="input-comp" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"></div>
+            <button onclick="saveSettings()" style="background: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px;">Save Configuration</button>
+            <button onclick="closeSettings()" style="background: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px;">Cancel</button>
         </div>
     </div>
 
     <script>
-        // EXACT GOOGLE SHEET LINKS (Updated with the new Scene Database link)
+        // GOOGLE SHEET LINKS
         const scenesCsvUrl = "https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=323715213"; 
         const assetsCsvUrl = "https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=366020038"; 
         const locationsCsvUrl = "https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340"; 
 
-        // --- DATE & UI HELPERS ---
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
-        
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
@@ -306,34 +226,11 @@
             }
         }
 
-        // --- TEAM SETTINGS MODAL ---
-        const defaultTeam = {
-            arts: ["Lokesh", "Reshma", "Vignesh", "Sedevito", "Amith", "Sai"], 
-            world: ["Soumya Ranjan", "Joel M", "Colin L", "Srimegha", "Joel S"], 
-            statics: ["Jacob Charles", "Abin Jilson", "Sai Charan", "Khaleel", "Pavan Kumar", "Bhargavi", "Sravan", "Veena", "Mabika", "Sandra", "Rakesh", "Anand"], 
-            assets: ["Shivang Arya", "Deep P", "Adithyan", "Karthik", "Sumit"], 
-            anim: ["Kirtan Mali", "Rishav M", "Ugur", "Tejas", "Devi"], 
-            mocap: ["Ankur", "Saiful", "Hari", "Prajwal"], 
-            comp: ["Lokesh", "Reshma", "Vignesh", "Jacob Charles", "Abin Jilson"] 
-        };
-
+        const defaultTeam = { arts: [], world: [], statics: [], assets: [], anim: [], mocap: [], comp: [] };
         let teamMembers = JSON.parse(localStorage.getItem('vfxTeamRoster')) || defaultTeam;
 
-        function openSettings() {
-            document.getElementById('input-arts').value = teamMembers.arts.join(", ");
-            document.getElementById('input-world').value = teamMembers.world.join(", ");
-            document.getElementById('input-statics').value = teamMembers.statics.join(", ");
-            document.getElementById('input-assets').value = teamMembers.assets.join(", ");
-            document.getElementById('input-anim').value = teamMembers.anim.join(", ");
-            document.getElementById('input-mocap').value = teamMembers.mocap.join(", ");
-            document.getElementById('input-comp').value = teamMembers.comp.join(", ");
-            document.getElementById('settingsModal').style.display = 'flex';
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').style.display = 'none';
-        }
-
+        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
         function saveSettings() {
             const parseNames = (val) => val.split(',').map(s => s.trim()).filter(s => s.length > 0 && s.toLowerCase() !== "unassigned");
             teamMembers.arts = parseNames(document.getElementById('input-arts').value);
@@ -343,18 +240,15 @@
             teamMembers.anim = parseNames(document.getElementById('input-anim').value);
             teamMembers.mocap = parseNames(document.getElementById('input-mocap').value);
             teamMembers.comp = parseNames(document.getElementById('input-comp').value);
-
             localStorage.setItem('vfxTeamRoster', JSON.stringify(teamMembers));
             closeSettings();
             location.reload(); 
         }
 
-        // --- VISUAL BADGE GENERATORS ---
         function getBadgeHTML(status, dateStr, assignee) {
             let text = (status || "").trim();
             let dateHtml = dateStr ? `<span class="target-date">${dateStr}</span>` : '';
             
-            // Visual Debugger: Always show Unassigned if the cell is blank.
             let cleanAssign = (assignee || "").trim();
             let assignHtml = "";
             if (cleanAssign && cleanAssign.toLowerCase() !== "unassigned") {
@@ -393,45 +287,44 @@
             else return `<span class="status-badge status-pending">-</span>`; 
         }
 
-        function fetchCSV(url) {
+        // ERROR HANDLING FETCHER
+        function fetchCSV(url, tabName) {
             return new Promise((resolve, reject) => {
-                Papa.parse(url, { download: true, header: true, complete: results => resolve(results.data), error: err => reject(err) });
+                Papa.parse(url, { 
+                    download: true, 
+                    header: true, 
+                    complete: results => resolve(results.data), 
+                    error: err => reject(`Failed to load ${tabName} tab. Error: ${err.message}`) 
+                });
             });
+        }
+
+        function showError(msg) {
+            const errDiv = document.getElementById('errorContainer');
+            errDiv.style.display = 'block';
+            errDiv.innerHTML = `<h3>⚠️ Database Connection Error</h3><p>${msg}</p><p>Check if your Google Sheet is set to <b>"Anyone with the link can View"</b> in the Share settings.</p>`;
+            document.getElementById('tableBody').innerHTML = `<tr><td colspan='9' style='color:red;'>Failed to load. See error above.</td></tr>`;
+            document.getElementById('syncStatusDiv').style.display = 'none';
         }
 
         async function loadDashboard() {
             try {
-                const [scenesData, assetsData, locationsData] = await Promise.all([
-                    fetchCSV(scenesCsvUrl), fetchCSV(assetsCsvUrl), fetchCSV(locationsCsvUrl)
-                ]);
+                // Fetching all three individually to catch which one fails
+                const scenesData = await fetchCSV(scenesCsvUrl, "Master Funnel");
+                const assetsData = await fetchCSV(assetsCsvUrl, "Assets");
+                const locationsData = await fetchCSV(locationsCsvUrl, "Locations");
 
                 let scenesMap = {}; 
                 let counts = { sc:{done:0, wip:0, rew:0}, sb:{done:0}, wd:{done:0}, st:{done:0, wip:0, rew:0}, mo:{done:0, wip:0, rew:0}, mc:{done:0}, as:{done:0}, rc:{done:0, wip:0, rew:0} };
                 let totalShots = 0, totalScenes = 0, totalLocs = 0;
-                
-                // DYNAMIC TEAM ROSTER ENGINE
                 let teamWorkload = {};
                 let dailyScheduleTasks = [];
-
-                // Pre-populate with default team so empty trackers show up
-                Object.keys(teamMembers).forEach(deptKey => {
-                    teamMembers[deptKey].forEach(name => {
-                        if (name !== "Unassigned" && !teamWorkload[name]) {
-                            teamWorkload[name] = { total: 0, done: 0, wip: 0, rew: 0, dept: deptKey };
-                        }
-                    });
-                });
 
                 function logTask(name, status, dateStr, dept, taskText) {
                     if (!name || name.trim() === "" || name.trim().toLowerCase() === "unassigned") return;
                     let cleanName = name.trim();
-                    
                     let existingProfile = Object.keys(teamWorkload).find(n => n.toLowerCase() === cleanName.toLowerCase());
-                    
-                    if (!existingProfile) {
-                        teamWorkload[cleanName] = { total: 0, done: 0, wip: 0, rew: 0, dept: dept };
-                        existingProfile = cleanName;
-                    }
+                    if (!existingProfile) { teamWorkload[cleanName] = { total: 0, done: 0, wip: 0, rew: 0, dept: dept }; existingProfile = cleanName; }
 
                     teamWorkload[existingProfile].total++;
                     let st = (status || "").toLowerCase();
@@ -443,22 +336,17 @@
                         let dStr = dateStr;
                         if (!dStr.match(/\d{4}/)) dStr += " 2026";
                         let dObj = new Date(dStr);
-                        if (!isNaN(dObj)) {
-                            dailyScheduleTasks.push({ dateObj: dObj, dateStr: dateStr, assignee: existingProfile, dept: dept, taskText: taskText, status: status });
-                        }
+                        if (!isNaN(dObj)) dailyScheduleTasks.push({ dateObj: dObj, dateStr: dateStr, assignee: existingProfile, dept: dept, taskText: taskText, status: status });
                     }
                 }
 
-                // =======================================
-                // 1. PROCESS LOCATIONS
-                // =======================================
+                // PROCESS LOCATIONS
                 let locHtml = "";
                 locationsData.forEach(row => {
                     if(!row['World Name']) return;
                     totalLocs++;
                     let wName = row['World Name'];
-                    let st = (row['Final Status'] || "").toLowerCase();
-                    if (st === 'done' || st === 'ready') counts.wd.done++;
+                    if ((row['Final Status'] || "").toLowerCase() === 'done') counts.wd.done++;
 
                     let refAssign = row['References Assignee'] || row['Reference Assignee'];
                     let aiAssign = row['AI Assignee'] || row['AI Asset Assignee'];
@@ -472,28 +360,15 @@
                     logTask(detAssign, row['3D Details'], row['3D Details Date'], "3D Details", `World: ${wName}`);
                     logTask(finAssign, row['Final Status'], row['Final Status Date'], "World Lead", `World Final: ${wName}`);
 
-                    locHtml += `
-                    <tr>
-                        <td><strong>${wName}</strong></td>
-                        <td><span style="font-size: 11px; color:#475569; font-weight: bold;">${row['Category'] || "-"}</span></td>
-                        <td><span style="font-size: 10px; color: #94a3b8;">${row['Linked Scenes'] || "-"}</span></td>
-                        <td>${getBadgeHTML(row['References'], row['References Date'], refAssign)}</td>
-                        <td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'], aiAssign)}</td>
-                        <td>${getBadgeHTML(row['3D Scaling'], row['3D Scaling Date'], scaleAssign)}</td>
-                        <td>${getBadgeHTML(row['3D Details'], row['3D Details Date'], detAssign)}</td>
-                        <td>${getBadgeHTML(row['Final Status'], row['Final Status Date'], finAssign)}</td>
-                    </tr>`;
+                    locHtml += `<tr><td><strong>${wName}</strong></td><td><span style="font-size: 11px; color:#475569; font-weight: bold;">${row['Category'] || "-"}</span></td><td><span style="font-size: 10px; color: #94a3b8;">${row['Linked Scenes'] || "-"}</span></td><td>${getBadgeHTML(row['References'], row['References Date'], refAssign)}</td><td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'], aiAssign)}</td><td>${getBadgeHTML(row['3D Scaling'], row['3D Scaling Date'], scaleAssign)}</td><td>${getBadgeHTML(row['3D Details'], row['3D Details Date'], detAssign)}</td><td>${getBadgeHTML(row['Final Status'], row['Final Status Date'], finAssign)}</td></tr>`;
                 });
                 document.getElementById('locationsTableBody').innerHTML = locHtml || "<tr><td colspan='8'>No Locations found.</td></tr>";
 
-                // =======================================
-                // 2. PROCESS ASSETS
-                // =======================================
+                // PROCESS ASSETS
                 let assetsHtml = "";
                 assetsData.forEach(row => {
                     if(!row['Asset Name']) return;
                     let aName = row['Asset Name'];
-
                     let refAssign = row['References Assignee'] || row['Reference Assignee'];
                     let sketchAssign = row['Sketches Assignee'] || row['Sketch Assignee'];
                     let aiAssign = row['AI Assignee'] || row['AI Asset Assignee'];
@@ -506,23 +381,11 @@
                     logTask(outAssign, row['3D Outsourced'], row['3D Outsourced Date'], "Outsource Mgmt", `Asset: ${aName}`);
                     logTask(finAssign, row['3D Asset Ready'], row['3D Asset Ready Date'], "3D Character", `Asset Final: ${aName}`);
 
-                    assetsHtml += `
-                    <tr>
-                        <td><strong>${aName}</strong></td>
-                        <td><span style="font-size: 11px; color:#475569; font-weight: bold;">${row['Category'] || "-"}</span></td>
-                        <td><span style="font-size: 10px; color: #94a3b8;">${row['Linked Scenes'] || "-"}</span></td>
-                        <td>${getBadgeHTML(row['References'], row['References Date'], refAssign)}</td>
-                        <td>${getBadgeHTML(row['Sketches'], row['Sketches Date'], sketchAssign)}</td>
-                        <td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'], aiAssign)}</td>
-                        <td>${getBadgeHTML(row['3D Outsourced'], row['3D Outsourced Date'], outAssign)}</td>
-                        <td>${getBadgeHTML(row['3D Asset Ready'], row['3D Asset Ready Date'], finAssign)}</td>
-                    </tr>`;
+                    assetsHtml += `<tr><td><strong>${aName}</strong></td><td><span style="font-size: 11px; color:#475569; font-weight: bold;">${row['Category'] || "-"}</span></td><td><span style="font-size: 10px; color: #94a3b8;">${row['Linked Scenes'] || "-"}</span></td><td>${getBadgeHTML(row['References'], row['References Date'], refAssign)}</td><td>${getBadgeHTML(row['Sketches'], row['Sketches Date'], sketchAssign)}</td><td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'], aiAssign)}</td><td>${getBadgeHTML(row['3D Outsourced'], row['3D Outsourced Date'], outAssign)}</td><td>${getBadgeHTML(row['3D Asset Ready'], row['3D Asset Ready Date'], finAssign)}</td></tr>`;
                 });
                 document.getElementById('assetsTableBody').innerHTML = assetsHtml || "<tr><td colspan='8'>No Assets found.</td></tr>";
 
-                // =======================================
-                // 3. PROCESS SCENES & SHOTS
-                // =======================================
+                // PROCESS SCENES
                 scenesData.forEach(row => {
                     let scNum = (row['Scene Number'] || row['Scene Number '] || "").trim();
                     let shNum = (row['Shot Number'] || row['Shot Number '] || "").trim();
@@ -535,11 +398,7 @@
                         scenesMap[currentSceneId].sceneRow = row;
                         totalScenes++;
                         
-                        let scStat = (row['scene Status'] || row['Scene Status'] || "").toLowerCase();
-                        if(scStat === 'locked') counts.sc.done++;
-                        if(scStat === 'in prod') counts.sc.wip++;
-                        if(scStat === 'in prep') counts.sc.rew++;
-
+                        if((row['scene Status'] || row['Scene Status'] || "").toLowerCase() === 'locked') counts.sc.done++;
                         if((row['Storyboard']||'').toLowerCase() === 'done') counts.sb.done++;
                         if((row['MoCap']||'').toLowerCase() === 'done') counts.mc.done++;
 
@@ -551,15 +410,8 @@
                         scenesMap[currentSceneId].shots.push(row);
                         totalShots++;
 
-                        let sLow = (row['Statics'] || "").toLowerCase();
-                        let mLow = (row['Motion'] || "").toLowerCase();
-                        let aLow = (row['3D Assets'] || "").toLowerCase();
-                        let rLow = (row['Recompositing'] || "").toLowerCase();
-
-                        if(sLow === 'done') counts.st.done++; else if(sLow === 'wip') counts.st.wip++; else if(sLow === 'rework') counts.st.rew++;
-                        if(mLow === 'done') counts.mo.done++; else if(mLow === 'wip') counts.mo.wip++; else if(mLow === 'rework') counts.mo.rew++;
-                        if(aLow === 'done') counts.as.done++;
-                        if(rLow === 'done') counts.rc.done++; else if(rLow === 'wip') counts.rc.wip++; else if(rLow === 'rework') counts.rc.rew++;
+                        let sLow = (row['Statics'] || "").toLowerCase(), mLow = (row['Motion'] || "").toLowerCase(), aLow = (row['3D Assets'] || "").toLowerCase(), rLow = (row['Recompositing'] || "").toLowerCase();
+                        if(sLow === 'done') counts.st.done++; if(mLow === 'done') counts.mo.done++; if(aLow === 'done') counts.as.done++; if(rLow === 'done') counts.rc.done++;
 
                         let shNameText = `Scene ${scNum} / Shot ${shNum}`;
                         let asAssignee = row['3D Assignee'] || row['3D Assets Assignee'];
@@ -594,111 +446,64 @@
                     </tr>`;
 
                     s.shots.forEach(shot => {
-                        let asAssignee = shot['3D Assignee'] || shot['3D Assets Assignee'];
-                        let rcAssignee = shot['Recomp Assignee'] || shot['Recompositing Assignee'];
-
                         scenesHtml += `
                         <tr class="shot-row shots-for-${sceneId}">
                             <td class="shot-indent">Shot ${shot['Shot Number'] || shot['Shot Number ']}</td>
                             <td></td><td></td><td class="col-overall-status"></td>
                             <td>${getBadgeHTML(shot['Statics'], shot['Statics Date'], shot['Statics Assignee'])}</td>
                             <td>${getBadgeHTML(shot['Motion'], shot['Motion Date'], shot['Motion Assignee'])}</td>
-                            <td>${getBadgeHTML(shot['3D Assets'], shot['3D Assets Date'], asAssignee)}</td>
+                            <td>${getBadgeHTML(shot['3D Assets'], shot['3D Assets Date'], (shot['3D Assignee'] || shot['3D Assets Assignee']))}</td>
                             <td></td>
-                            <td>${getBadgeHTML(shot['Recompositing'], shot['Recompositing Date'], rcAssignee)}</td>
+                            <td>${getBadgeHTML(shot['Recompositing'], shot['Recompositing Date'], (shot['Recomp Assignee'] || shot['Recompositing Assignee']))}</td>
                         </tr>`;
                     });
                 });
-                document.getElementById('tableBody').innerHTML = scenesHtml;
+                document.getElementById('tableBody').innerHTML = scenesHtml || "<tr><td colspan='9'>No valid Scene Rows found in the Sheet.</td></tr>";
                 
-                // UPDATE CARDS & PROGRESS
+                // UPDATE CARDS 
                 document.getElementById('card-sc').innerText = `${counts.sc.done} / ${Math.max(totalScenes, 104)}`;
-                document.getElementById('mini-sc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.sc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.sc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.sc.rew}</span>`;
-                
                 document.getElementById('card-sb').innerText = `${counts.sb.done} / ${Math.max(totalScenes, 104)}`;
                 document.getElementById('card-wd').innerText = `${counts.wd.done} / ${Math.max(totalLocs, 24)}`;
-                
                 document.getElementById('card-st').innerText = `${counts.st.done} / ${Math.max(totalShots, 3120)}`;
-                document.getElementById('mini-st').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.st.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.st.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.st.rew}</span>`;
-                
                 document.getElementById('card-mo').innerText = `${counts.mo.done} / ${Math.max(totalShots, 3120)}`;
-                document.getElementById('mini-mo').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.mo.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.mo.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.mo.rew}</span>`;
-                
                 document.getElementById('card-mc').innerText = `${counts.mc.done} / ${Math.max(totalScenes, 104)}`;
                 document.getElementById('card-as').innerText = `${counts.as.done} / ${Math.max(totalShots, 3120)}`;
-
                 document.getElementById('card-rc').innerText = `${counts.rc.done} / ${Math.max(totalShots, 3120)}`;
-                document.getElementById('mini-rc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.rc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.rc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.rc.rew}</span>`;
 
-                let completionPercentage = totalShots > 0 ? Math.round((counts.rc.done / totalShots) * 100) : 0;
-                document.getElementById('progress-bar').style.width = `${completionPercentage}%`;
-                document.getElementById('progress-text').innerText = `${completionPercentage}%`;
+                let pct = totalShots > 0 ? Math.round((counts.rc.done / totalShots) * 100) : 0;
+                document.getElementById('progress-bar').style.width = `${pct}%`;
+                document.getElementById('progress-text').innerText = `${pct}%`;
 
-                // BUILD TEAM TRACKER TAB
+                // BUILD TEAM TRACKER
                 let teamHtml = "";
                 let sortedTeam = Object.keys(teamWorkload).sort((a, b) => teamWorkload[b].total - teamWorkload[a].total);
-                
                 sortedTeam.forEach(name => {
                     let w = teamWorkload[name];
                     if (w.total === 0) return; 
-                    
                     let donePct = (w.done / w.total) * 100;
                     let wipPct = (w.wip / w.total) * 100;
                     let rewPct = (w.rew / w.total) * 100;
-                    let initial = name.charAt(0).toUpperCase();
-
-                    teamHtml += `
-                    <tr>
-                        <td style="text-align: left; font-weight: 600; color: #0f172a;">
-                            <span class="avatar">${initial}</span> ${name}
-                        </td>
-                        <td><span style="font-size:10px; color:#64748b; font-weight:bold; text-transform:uppercase;">${w.dept || "-"}</span></td>
-                        <td><strong style="font-size: 16px;">${w.total}</strong></td>
-                        <td style="color: #059669; font-weight: bold;">${w.done}</td>
-                        <td style="color: #d97706; font-weight: bold;">${w.wip}</td>
-                        <td style="color: #dc2626; font-weight: bold;">${w.rew}</td>
-                        <td>
-                            <div class="workload-bar-container">
-                                <div class="wb-done" style="width: ${donePct}%;" title="Done"></div>
-                                <div class="wb-wip" style="width: ${wipPct}%;" title="WIP"></div>
-                                <div class="wb-rew" style="width: ${rewPct}%;" title="Rework"></div>
-                            </div>
-                        </td>
-                    </tr>`;
+                    teamHtml += `<tr><td style="text-align: left; font-weight: 600; color: #0f172a;"><span class="avatar">${name.charAt(0).toUpperCase()}</span> ${name}</td><td><span style="font-size:10px; color:#64748b; font-weight:bold; text-transform:uppercase;">${w.dept || "-"}</span></td><td><strong style="font-size: 16px;">${w.total}</strong></td><td style="color: #059669; font-weight: bold;">${w.done}</td><td style="color: #d97706; font-weight: bold;">${w.wip}</td><td style="color: #dc2626; font-weight: bold;">${w.rew}</td><td><div class="workload-bar-container"><div class="wb-done" style="width: ${donePct}%;" title="Done"></div><div class="wb-wip" style="width: ${wipPct}%;" title="WIP"></div><div class="wb-rew" style="width: ${rewPct}%;" title="Rework"></div></div></td></tr>`;
                 });
                 document.getElementById('teamTableBody').innerHTML = teamHtml || "<tr><td colspan='7'>No tasks assigned in the sheets yet.</td></tr>";
 
-                // BUILD DAILY SCHEDULE TAB
+                // BUILD DAILY SCHEDULE
                 dailyScheduleTasks.sort((a, b) => a.dateObj - b.dateObj); 
                 let scheduleHtml = "";
                 let currentBgColor = "#ffffff";
                 let prevDateStr = "";
-
                 dailyScheduleTasks.forEach(task => {
-                    if (task.dateStr !== prevDateStr) {
-                        currentBgColor = (currentBgColor === "#ffffff") ? "#f8fafc" : "#ffffff";
-                        prevDateStr = task.dateStr;
-                    }
-                    scheduleHtml += `
-                    <tr style="background-color: ${currentBgColor};">
-                        <td style="font-weight: bold; color: #b91c1c;">${task.dateStr}</td>
-                        <td style="text-align: left; font-weight: 600; color: #0f172a; padding-left: 15px;">
-                            <span class="avatar" style="width: 18px; height: 18px; font-size: 8px;">${task.assignee.charAt(0).toUpperCase()}</span>
-                            ${task.assignee}
-                        </td>
-                        <td><span style="font-size:10px; color:#64748b; text-transform:uppercase; font-weight:bold;">${task.dept}</span></td>
-                        <td style="text-align: left; color: #334155;"><strong>${task.taskText}</strong></td>
-                        <td>${getBadgeHTML(task.status)}</td>
-                    </tr>`;
+                    if (task.dateStr !== prevDateStr) { currentBgColor = (currentBgColor === "#ffffff") ? "#f8fafc" : "#ffffff"; prevDateStr = task.dateStr; }
+                    scheduleHtml += `<tr style="background-color: ${currentBgColor};"><td style="font-weight: bold; color: #b91c1c;">${task.dateStr}</td><td style="text-align: left; font-weight: 600; color: #0f172a; padding-left: 15px;"><span class="avatar" style="width: 18px; height: 18px; font-size: 8px;">${task.assignee.charAt(0).toUpperCase()}</span>${task.assignee}</td><td><span style="font-size:10px; color:#64748b; text-transform:uppercase; font-weight:bold;">${task.dept}</span></td><td style="text-align: left; color: #334155;"><strong>${task.taskText}</strong></td><td>${getBadgeHTML(task.status)}</td></tr>`;
                 });
                 document.getElementById('scheduleTableBody').innerHTML = scheduleHtml || "<tr><td colspan='5'>No scheduled tasks found in the sheet.</td></tr>";
 
             } catch (err) {
-                console.error("Critical Error Loading Data:", err);
+                console.error(err);
+                showError(err); // Trigger the big red error box!
             }
         }
 
-        // Auto-refresh the dashboard every 60 seconds!
         loadDashboard();
         setInterval(loadDashboard, 60000); 
 
