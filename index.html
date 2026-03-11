@@ -83,10 +83,6 @@
         .team-bar-bg { width: 100%; background-color: #e9ecef; height: 8px; border-radius: 4px; margin-top: 4px; overflow: hidden; }
         .team-bar-fg { height: 100%; background-color: #3b82f6; border-radius: 4px; transition: width 0.5s ease; }
         .team-bar-fg.complete { background-color: #10b981; }
-        
-        .history-table { width: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 6px; border-collapse: collapse; margin-top: 5px; }
-        .history-table th { background: #f8f9fa; font-size: 11px; padding: 6px 10px; color: #475569; }
-        .history-table td { font-size: 12px; padding: 6px 10px; border-bottom: 1px solid #f1f5f9; }
     </style>
 </head>
 <body>
@@ -173,7 +169,7 @@
         <button class="tab active" onclick="switchTab('funnel')">🎥 Master Funnel</button>
         <button class="tab" onclick="switchTab('characters')">🦸‍♂️ Characters & Props</button>
         <button class="tab" onclick="switchTab('locations')">🌍 Worlds & Locations</button>
-        <button class="tab" onclick="switchTab('team')">👥 Team Workload & Status</button>
+        <button class="tab" onclick="switchTab('team')">👥 Department Workloads</button>
     </div>
 
     <div id="funnel" class="tab-content active">
@@ -244,26 +240,15 @@
         </table>
     </div>
 
-    <div id="team" class="tab-content">
-        <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; margin-bottom: 20px;">
-            <h3 style="margin:0 0 5px 0; color: #1e3a8a;">Team Workload Tracker</h3>
-            <p style="margin:0; font-size:13px; color: #3b82f6;">Tracks individual artist assignments across all dates. If an artist works on the exact same task for 3 days or more, it flags it as a Bottleneck.</p>
+    <div id="team" class="tab-content" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+        <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+            <h3 style="margin:0 0 5px 0; color: #1e3a8a;">Department Workload & History</h3>
+            <p style="margin:0; font-size:13px; color: #3b82f6;">Tracking artists by their department. Click on an artist to drop down and view their entire past and future task history.</p>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 200px;">Artist Name / Dept</th>
-                    <th>Role</th>
-                    <th style="width: 150px;">Task Progress</th>
-                    <th>Current Active Task</th>
-                    <th>Target Date</th>
-                    <th>Health</th>
-                </tr>
-            </thead>
-            <tbody id="teamTableBody">
-                <tr><td colspan="6" class="loading-text">Processing Team Workloads...</td></tr>
-            </tbody>
-        </table>
+        
+        <div id="teamTableBody">
+            <div class="loading-text" style="background:white; border-radius:8px;">Processing Team Workloads...</div>
+        </div>
     </div>
 
     <script>
@@ -304,7 +289,7 @@
         function toggleTeamHistory(artistId) {
             const elements = document.getElementsByClassName(artistId);
             for (let i = 0; i < elements.length; i++) {
-                elements[i].style.display = (elements[i].style.display === "table-row") ? "none" : "table-row";
+                elements[i].style.display = (elements[i].style.display === "table-row" || elements[i].style.display === "table") ? "none" : "table-row";
             }
         }
 
@@ -322,7 +307,7 @@
         }
 
         // ==========================================
-        // 🔴 CACHE-BUSTING URLs (FULLY FIXED)
+        // 🔴 CACHE-BUSTING URLs
         // ==========================================
         const ts = new Date().getTime();
         const scenesCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=0&nocache=${ts}`; 
@@ -472,7 +457,7 @@
                         if (results.data && results.data.length > 0) {
                             let testCell = String(useHeader ? Object.keys(results.data[0])[0] : results.data[0][0]);
                             if (testCell.includes("<!DOCTYPE") || testCell.includes("_bootstrap")) {
-                                console.error("ERROR: Received a Webpage instead of a CSV. Make sure you use the export?format=csv URL.");
+                                console.error("ERROR: Received a Webpage instead of a CSV.");
                                 resolve([]); 
                                 return;
                             }
@@ -528,15 +513,16 @@
         }
 
         // ==========================================
-        // 🔴 TEAM TRACKER HORIZONTAL CSV ENGINE
+        // 🔴 TEAM TRACKER: DEPARTMENT GROUPING ENGINE
         // ==========================================
         function processTeamData2D(rawData) {
             let members = {};
             if (!rawData || rawData.length < 2) {
-                document.getElementById('teamTableBody').innerHTML = "<tr><td colspan='6'>No valid team data found.</td></tr>";
+                document.getElementById('teamTableBody').innerHTML = "<div style='padding:20px; text-align:center; color:#888; background:white; border-radius:8px;'>No valid team data found. Check your CSV link format.</div>";
                 return;
             }
 
+            // Extract all dates horizontally
             let dates = [];
             let headerRow = rawData[0];
             for (let c = 2; c < headerRow.length; c += 3) {
@@ -558,19 +544,19 @@
 
                 if (!col0 && !col1) continue; 
 
-                // Look for Department headers
+                // Detect Department or Sub-department Rows (Col 1 is empty)
                 if (col0 && !col1) {
                     let isSub = ["Arts", "2D", "3D", "COMP", "VIDGEN"].includes(col0);
                     if (isSub) {
                         currentSubDept = col0;
                     } else {
-                        // Skip rendering the checkmark symbol internally
                         currentDept = col0.replace("✔", "").trim();
                         currentSubDept = "";
                     }
                     continue;
                 }
 
+                // Detect Artist Row
                 if (col0 && col1) {
                     let artistName = col0;
                     let role = col1;
@@ -621,122 +607,156 @@
                 }
             }
 
+            // GROUP BY DEPARTMENT
+            let depts = {};
+            Object.values(members).forEach(m => {
+                if (!depts[m.dept]) depts[m.dept] = [];
+                depts[m.dept].push(m);
+            });
+
             let teamHtml = "";
             let memberCount = 0;
 
-            Object.values(members).forEach(m => {
-                let allTasks = Object.values(m.tasksMap);
+            Object.keys(depts).forEach(deptName => {
                 
-                m.doneTasks = allTasks.filter(t => {
-                    let s = t.latestStatus.toLowerCase();
-                    return s === 'done' || s === 'approved' || s === 'cleared' || s === 'ready';
-                }).length;
-
-                let pct = m.totalTasks > 0 ? Math.round((m.doneTasks / m.totalTasks) * 100) : 0;
-                let barClass = (pct === 100 && m.totalTasks > 0) ? "complete" : "";
-
-                let hasConcerningTask = false;
-                allTasks.forEach(t => {
-                    if (t.history.length >= 3) {
-                        let s = t.latestStatus.toLowerCase();
-                        if (!(s === 'done' || s === 'approved' || s === 'cleared' || s === 'ready')) {
-                            t.isConcerning = true;
-                            hasConcerningTask = true;
-                        }
-                    }
-                });
-
-                let activeTask = allTasks.find(t => {
-                    let s = t.latestStatus.toLowerCase();
-                    return s === 'wip' || s === 'progress' || s === 'feedback' || s === 'rework' || t.isConcerning;
-                }) || allTasks.find(t => {
-                    let s = t.latestStatus.toLowerCase();
-                    return s !== 'done' && s !== 'approved';
-                }) || allTasks[allTasks.length - 1];
-
-                let taskDescUI = activeTask ? `<strong>${activeTask.desc}</strong>` : "-";
-                if (activeTask && activeTask.isConcerning) {
-                    taskDescUI += `<br><span style="color:#d32f2f; font-size:10px; font-weight:bold;">⚠️ Bottleneck (Spans ${activeTask.history.length} days)</span>`;
-                }
-
-                let tDate = activeTask ? activeTask.latestDate : "";
-                let tStatus = activeTask ? activeTask.latestStatus : "";
-
-                let healthUI = "";
-                if (hasConcerningTask) {
-                    healthUI = `<span style="color:#d32f2f; font-weight:bold; font-size:12px;">⚠️ BOTTLENECK</span>`;
-                } else if (pct === 100 && m.totalTasks > 0) {
-                    healthUI = `<span style="color:#10b981; font-weight:bold; font-size:12px;">✔ CLEAR</span>`;
-                } else if (m.totalTasks === 0) {
-                    healthUI = `<span style="color:#888; font-size:12px;">NO TASKS YET</span>`;
-                } else {
-                    healthUI = `<span style="color:#3b82f6; font-weight:bold; font-size:12px;">ON TRACK</span>`;
-                }
-
-                let expandBtn = `<button class="expand-btn" onclick="event.stopPropagation(); toggleTeamHistory('${m.safeId}')">View Timeline ▼</button>`;
-
+                // Construct Department Block
                 teamHtml += `
-                <tr class="parent-row" onclick="toggleTeamHistory('${m.safeId}')">
-                    <td style="text-align:left;">
-                        <strong>${m.name}</strong> ${expandBtn}<br>
-                        <span style="font-size:11px; color:#64748b;">${m.dept}</span>
-                    </td>
-                    <td><span style="font-size:11px; background:#f1f5f9; padding:4px 8px; border-radius:4px; color:#475569;">${m.role}</span></td>
-                    <td>
-                        <div style="font-size: 11px; font-weight:bold; margin-bottom:4px; color:#475569;">${m.doneTasks} / ${m.totalTasks} Tasks (${pct}%)</div>
-                        <div class="team-bar-bg">
-                            <div class="team-bar-fg ${barClass}" style="width: ${pct}%;"></div>
-                        </div>
-                    </td>
-                    <td>${taskDescUI}</td>
-                    <td>${getBadgeHTML(tStatus, tDate)}</td>
-                    <td>${healthUI}</td>
-                </tr>`;
+                <div style="margin-bottom: 25px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                    <div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0;">
+                        <h3 style="margin: 0; color: #0f172a; font-size: 16px; font-weight: bold;">🏢 ${deptName}</h3>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; margin: 0;">
+                        <thead style="background-color: #ffffff;">
+                            <tr>
+                                <th style="width: 250px; padding: 10px 20px; text-align: left; font-size: 11px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Member / Role</th>
+                                <th style="width: 150px; padding: 10px 20px; text-align: left; font-size: 11px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Progress</th>
+                                <th style="padding: 10px 20px; text-align: left; font-size: 11px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Current Active Task</th>
+                                <th style="padding: 10px 20px; text-align: center; font-size: 11px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Target Date</th>
+                                <th style="padding: 10px 20px; text-align: center; font-size: 11px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Health</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
 
-                if (allTasks.length > 0) {
-                    let historyHtml = `<tr class="shot-row ${m.safeId}"><td colspan="6" style="padding: 15px 25px; background: #fafafa; border-bottom: 2px solid #e2e8f0;">`;
-                    historyHtml += `<h4 style="margin:0 0 10px 0; color:#475569; font-size: 13px;">Task Timeline for ${m.name}</h4>`;
-                    historyHtml += `<table class="history-table">
-                                        <tr>
-                                            <th style="width:120px;">Date</th>
-                                            <th>Task Description</th>
-                                            <th>Internal Status</th>
-                                            <th>External Status</th>
-                                            <th>Health</th>
-                                        </tr>`;
+                depts[deptName].forEach(m => {
+                    let allTasks = Object.values(m.tasksMap);
                     
-                    let flatHistory = [];
+                    m.doneTasks = allTasks.filter(t => {
+                        let s = t.latestStatus.toLowerCase();
+                        return s === 'done' || s === 'approved' || s === 'cleared' || s === 'ready';
+                    }).length;
+
+                    let pct = m.totalTasks > 0 ? Math.round((m.doneTasks / m.totalTasks) * 100) : 0;
+                    let barClass = (pct === 100 && m.totalTasks > 0) ? "complete" : "";
+
+                    let hasConcerningTask = false;
                     allTasks.forEach(t => {
-                        t.history.forEach(h => {
-                            flatHistory.push({
-                                dateStr: h.dateStr,
-                                desc: t.desc,
-                                internal: h.internal,
-                                external: h.external,
-                                isConcerning: t.isConcerning && (t.history.length >= 3)
+                        if (t.history.length >= 3) {
+                            let s = t.latestStatus.toLowerCase();
+                            if (!(s === 'done' || s === 'approved' || s === 'cleared' || s === 'ready')) {
+                                t.isConcerning = true;
+                                hasConcerningTask = true;
+                            }
+                        }
+                    });
+
+                    // Current Active Task Logic
+                    let activeTask = allTasks.find(t => {
+                        let s = t.latestStatus.toLowerCase();
+                        return s === 'wip' || s === 'progress' || s === 'feedback' || s === 'rework' || t.isConcerning;
+                    }) || allTasks.find(t => {
+                        let s = t.latestStatus.toLowerCase();
+                        return s !== 'done' && s !== 'approved';
+                    }) || allTasks[allTasks.length - 1];
+
+                    let taskDescUI = activeTask ? `<strong>${activeTask.desc}</strong>` : "-";
+                    if (activeTask && activeTask.isConcerning) {
+                        taskDescUI += `<br><span style="color:#d32f2f; font-size:10px; font-weight:bold;">⚠️ Bottleneck (Spans ${activeTask.history.length} days)</span>`;
+                    }
+
+                    let tDate = activeTask ? activeTask.latestDate : "";
+                    let tStatus = activeTask ? activeTask.latestStatus : "";
+
+                    let healthUI = "";
+                    if (hasConcerningTask) {
+                        healthUI = `<span style="color:#d32f2f; font-weight:bold; font-size:12px;">⚠️ BOTTLENECK</span>`;
+                    } else if (pct === 100 && m.totalTasks > 0) {
+                        healthUI = `<span style="color:#10b981; font-weight:bold; font-size:12px;">✔ CLEAR</span>`;
+                    } else if (m.totalTasks === 0) {
+                        healthUI = `<span style="color:#888; font-size:12px;">NO TASKS YET</span>`;
+                    } else {
+                        healthUI = `<span style="color:#3b82f6; font-weight:bold; font-size:12px;">ON TRACK</span>`;
+                    }
+
+                    let expandBtn = `<button class="expand-btn" onclick="event.stopPropagation(); toggleTeamHistory('${m.safeId}')">Past Assignments ▼</button>`;
+
+                    // ARTIST MAIN ROW
+                    teamHtml += `
+                    <tr class="parent-row" onclick="toggleTeamHistory('${m.safeId}')">
+                        <td style="text-align:left; padding-left: 20px;">
+                            <strong>${m.name}</strong> ${expandBtn}<br>
+                            <span style="font-size:10px; background:#f1f5f9; padding:2px 6px; border-radius:4px; color:#475569; display:inline-block; margin-top:3px;">${m.role}</span>
+                        </td>
+                        <td style="text-align:left; padding-left: 20px;">
+                            <div style="font-size: 11px; font-weight:bold; margin-bottom:4px; color:#475569;">${m.doneTasks} / ${m.totalTasks} Tasks (${pct}%)</div>
+                            <div class="team-bar-bg">
+                                <div class="team-bar-fg ${barClass}" style="width: ${pct}%;"></div>
+                            </div>
+                        </td>
+                        <td style="text-align:left; padding-left: 20px;">${taskDescUI}</td>
+                        <td style="text-align:center;">${getBadgeHTML(tStatus, tDate)}</td>
+                        <td style="text-align:center;">${healthUI}</td>
+                    </tr>`;
+
+                    // ARTIST HISTORY DROPDOWN
+                    if (allTasks.length > 0) {
+                        let historyHtml = `<tr class="shot-row ${m.safeId}"><td colspan="5" style="padding: 15px 25px; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">`;
+                        historyHtml += `<h4 style="margin:0 0 10px 0; color:#475569; font-size: 13px;">Complete Timeline for ${m.name}</h4>`;
+                        historyHtml += `<table style="background:white; width:100%; border:1px solid #cbd5e1; border-radius:6px; border-collapse: collapse;">
+                                            <tr style="background:#f1f5f9;">
+                                                <th style="width:120px; padding:6px 10px; font-size:11px; text-align:left; border-bottom: 1px solid #cbd5e1;">Date</th>
+                                                <th style="padding:6px 10px; font-size:11px; text-align:left; border-bottom: 1px solid #cbd5e1;">Task Description</th>
+                                                <th style="padding:6px 10px; font-size:11px; text-align:center; border-bottom: 1px solid #cbd5e1;">Internal Status</th>
+                                                <th style="padding:6px 10px; font-size:11px; text-align:center; border-bottom: 1px solid #cbd5e1;">External Status</th>
+                                                <th style="padding:6px 10px; font-size:11px; text-align:center; border-bottom: 1px solid #cbd5e1;">Health</th>
+                                            </tr>`;
+                        
+                        let flatHistory = [];
+                        allTasks.forEach(t => {
+                            t.history.forEach(h => {
+                                flatHistory.push({
+                                    dateStr: h.dateStr,
+                                    desc: t.desc,
+                                    internal: h.internal,
+                                    external: h.external,
+                                    isConcerning: t.isConcerning && (t.history.length >= 3)
+                                });
                             });
                         });
-                    });
 
-                    flatHistory.sort((a, b) => new Date(a.dateStr.replace("'", " 20")) - new Date(b.dateStr.replace("'", " 20")));
+                        // Sort chronologically (Past to Future)
+                        flatHistory.sort((a, b) => new Date(a.dateStr.replace("'", " 20")) - new Date(b.dateStr.replace("'", " 20")));
 
-                    flatHistory.forEach(h => {
-                        let hHealth = h.isConcerning ? `<span style="color:#d32f2f; font-weight:bold; font-size:11px;">⚠️ Delayed Task</span>` : `<span style="color:#10b981; font-weight:bold; font-size:11px;">Normal</span>`;
-                        historyHtml += `<tr>
-                                            <td><strong>${h.dateStr}</strong></td>
-                                            <td>${h.desc}</td>
-                                            <td>${getBadgeHTML(h.internal, "")}</td>
-                                            <td>${getBadgeHTML(h.external, "")}</td>
-                                            <td>${hHealth}</td>
-                                        </tr>`;
-                    });
-                    historyHtml += `</table></td></tr>`;
-                    teamHtml += historyHtml;
-                }
-                memberCount++;
+                        flatHistory.forEach(h => {
+                            let hHealth = h.isConcerning ? `<span style="color:#d32f2f; font-weight:bold; font-size:11px;">⚠️ Delayed Task</span>` : `<span style="color:#10b981; font-weight:bold; font-size:11px;">Normal</span>`;
+                            historyHtml += `<tr style="border-bottom:1px solid #f1f5f9;">
+                                                <td style="padding:6px 10px; font-size:12px; text-align:left;"><strong>${h.dateStr}</strong></td>
+                                                <td style="padding:6px 10px; font-size:12px; text-align:left;">${h.desc}</td>
+                                                <td style="padding:6px 10px; font-size:12px; text-align:center;">${getBadgeHTML(h.internal, "")}</td>
+                                                <td style="padding:6px 10px; font-size:12px; text-align:center;">${getBadgeHTML(h.external, "")}</td>
+                                                <td style="padding:6px 10px; font-size:12px; text-align:center;">${hHealth}</td>
+                                            </tr>`;
+                        });
+                        historyHtml += `</table></td></tr>`;
+                        teamHtml += historyHtml;
+                    }
+                    memberCount++;
+                });
+
+                teamHtml += `</tbody></table></div>`;
             });
 
-            if (memberCount === 0) teamHtml = "<tr><td colspan='6'>No valid team data found.</td></tr>";
+            if (memberCount === 0) teamHtml = "<div style='padding:20px; text-align:center; color:#888; background:white; border-radius:8px;'>No valid team data found. Check your CSV link format.</div>";
             document.getElementById('teamTableBody').innerHTML = teamHtml;
         }
 
