@@ -322,27 +322,15 @@
         }
 
         // ==========================================
-        // 🔴 CACHE-BUSTING URLs
+        // 🔴 CACHE-BUSTING URLs (FULLY FIXED)
         // ==========================================
         const ts = new Date().getTime();
         const scenesCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=0&nocache=${ts}`; 
         const assetsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=366020038&nocache=${ts}`; 
         const locationsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340&nocache=${ts}`; 
         
-        // 🚀 TEAM CSV LINK GOES HERE
-        const teamCsvUrl = ""; 
-
-        // 🟢 DUMMY DATA FOR NEW GRID FORMAT (Only used if teamCsvUrl is empty)
-        const dummyTeamDataRaw = [
-            ["Arts Team", "Role", "11 Mar'25", "", "", "12 Mar'25", "", "", "13 Mar'25", "", "", "14 Mar'25", "", ""],
-            ["", "", "Task", "Internal", "External", "Task", "Internal", "External", "Task", "Internal", "External", "Task", "Internal", "External"],
-            ["Lokesh Babu ", "Lead", "Concept Art Sc 1", "Done", "Done", "Concept Art Sc 2", "WIP", "", "Concept Art Sc 2", "WIP", "", "Concept Art Sc 2", "WIP", ""],
-            ["Reshma. J", "Member", "Concept Art Sc 3", "Done", "Done", "Concept Art Sc 4", "WIP", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-            ["AI World", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-            ["Arts", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-            ["Sai Shankar", "Member", "Base Gen", "Done", "Done", "Env Polish", "WIP", "", "", "", "", "", "", ""]
-        ];
+        // 🚀 LIVE TEAM URL: Automatically exports GID 162642321 to raw CSV!
+        const teamCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=162642321&nocache=${ts}`; 
 
         function isOverdue(dateStr, status) {
             if (!dateStr) return false;
@@ -481,12 +469,11 @@
                     download: true, 
                     header: useHeader, 
                     complete: results => {
-                        // ERROR SHIELD: Detect if we received a Google Sheets Webpage instead of a CSV
                         if (results.data && results.data.length > 0) {
                             let testCell = String(useHeader ? Object.keys(results.data[0])[0] : results.data[0][0]);
                             if (testCell.includes("<!DOCTYPE") || testCell.includes("_bootstrap")) {
-                                console.error("ERROR: Received a Webpage instead of a CSV. Check your Google Sheet URL formatting.");
-                                resolve([]); // Return empty to protect the UI
+                                console.error("ERROR: Received a Webpage instead of a CSV. Make sure you use the export?format=csv URL.");
+                                resolve([]); 
                                 return;
                             }
                         }
@@ -545,7 +532,10 @@
         // ==========================================
         function processTeamData2D(rawData) {
             let members = {};
-            if (!rawData || rawData.length < 2) return;
+            if (!rawData || rawData.length < 2) {
+                document.getElementById('teamTableBody').innerHTML = "<tr><td colspan='6'>No valid team data found.</td></tr>";
+                return;
+            }
 
             let dates = [];
             let headerRow = rawData[0];
@@ -568,12 +558,14 @@
 
                 if (!col0 && !col1) continue; 
 
+                // Look for Department headers
                 if (col0 && !col1) {
                     let isSub = ["Arts", "2D", "3D", "COMP", "VIDGEN"].includes(col0);
                     if (isSub) {
                         currentSubDept = col0;
                     } else {
-                        currentDept = col0;
+                        // Skip rendering the checkmark symbol internally
+                        currentDept = col0.replace("✔", "").trim();
                         currentSubDept = "";
                     }
                     continue;
@@ -603,7 +595,7 @@
                         let tInt = String(row[d.colIndex + 1] || "").trim();
                         let tExt = String(row[d.colIndex + 2] || "").trim();
                         
-                        if (tDesc) {
+                        if (tDesc && tDesc !== "-" && tDesc !== "") {
                             if (!m.tasksMap[tDesc]) {
                                 m.tasksMap[tDesc] = {
                                     desc: tDesc,
@@ -630,6 +622,8 @@
             }
 
             let teamHtml = "";
+            let memberCount = 0;
+
             Object.values(members).forEach(m => {
                 let allTasks = Object.values(m.tasksMap);
                 
@@ -673,6 +667,8 @@
                     healthUI = `<span style="color:#d32f2f; font-weight:bold; font-size:12px;">⚠️ BOTTLENECK</span>`;
                 } else if (pct === 100 && m.totalTasks > 0) {
                     healthUI = `<span style="color:#10b981; font-weight:bold; font-size:12px;">✔ CLEAR</span>`;
+                } else if (m.totalTasks === 0) {
+                    healthUI = `<span style="color:#888; font-size:12px;">NO TASKS YET</span>`;
                 } else {
                     healthUI = `<span style="color:#3b82f6; font-weight:bold; font-size:12px;">ON TRACK</span>`;
                 }
@@ -737,16 +733,18 @@
                     historyHtml += `</table></td></tr>`;
                     teamHtml += historyHtml;
                 }
+                memberCount++;
             });
 
-            document.getElementById('teamTableBody').innerHTML = teamHtml || "<tr><td colspan='6'>No valid team data found. Check your CSV link format.</td></tr>";
+            if (memberCount === 0) teamHtml = "<tr><td colspan='6'>No valid team data found.</td></tr>";
+            document.getElementById('teamTableBody').innerHTML = teamHtml;
         }
 
         async function buildDashboard() {
             try {
                 let teamFetchPromise = teamCsvUrl && teamCsvUrl.trim() !== "" 
                     ? fetchCSV(teamCsvUrl, false) 
-                    : Promise.resolve(dummyTeamDataRaw);
+                    : Promise.resolve([]);
 
                 const [scenesData, assetsData, locationsData, teamData] = await Promise.all([
                     fetchCSV(scenesCsvUrl, true),
