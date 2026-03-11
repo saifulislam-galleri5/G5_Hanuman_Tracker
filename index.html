@@ -248,7 +248,7 @@
     <div id="team" class="tab-content">
         <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; margin-bottom: 20px;">
             <h3 style="margin:0 0 5px 0; color: #1e3a8a;">Team Workload Tracker</h3>
-            <p style="margin:0; font-size:13px; color: #3b82f6;">Tracking individual artist assignments, completion rates, and next immediate deadlines. Click a row to see the artist's full task history.</p>
+            <p style="margin:0; font-size:13px; color: #3b82f6;">Tracks individual artist assignments across all dates. If an artist works on the exact same task for 3 days or more, it flags it as a Bottleneck.</p>
         </div>
         <table>
             <thead>
@@ -331,18 +331,19 @@
         const locationsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340&nocache=${ts}`; 
         
         // 🚀 TEAM CSV LINK GOES HERE (Leave blank to use Demo Mode)
+        // Add your Google sheet CSV link here once you publish the "Task Tracker - Sheet1" tab to web
         const teamCsvUrl = ""; 
 
-        // 🟢 DUMMY DATA (Only used if teamCsvUrl is empty)
-        const dummyTeamData = [
-            {"Assignee Name": "Jacob Charles Joy", "Department": "2D Statics", "Role": "Lead", "Task Description": "Initial Statics Mockup", "Linked Scene": "Scene 3", "Target Date": "05-Mar-26", "Status": "Done"},
-            {"Assignee Name": "Jacob Charles Joy", "Department": "2D Statics", "Role": "Lead", "Task Description": "Statics Revision", "Linked Scene": "Scene 5", "Target Date": "08-Mar-26", "Status": "Done"},
-            {"Assignee Name": "Jacob Charles Joy", "Department": "2D Statics", "Role": "Lead", "Task Description": "Statics Revision", "Linked Scene": "Scene 17", "Target Date": "11-Mar-26", "Status": "WIP"},
-            {"Assignee Name": "Jacob Charles Joy", "Department": "2D Statics", "Role": "Lead", "Task Description": "Final Polish", "Linked Scene": "Scene 49", "Target Date": "15-Mar-26", "Status": "Pending"},
-            {"Assignee Name": "Vaishnav", "Department": "Video Gen & COMP", "Role": "Overall Lead", "Task Description": "Video Gen First Pass", "Linked Scene": "Scene 1", "Target Date": "10-Mar-26", "Status": "Feedback"},
-            {"Assignee Name": "Vaishnav", "Department": "Video Gen & COMP", "Role": "Overall Lead", "Task Description": "Video Gen Refinement", "Linked Scene": "Scene 2", "Target Date": "14-Mar-26", "Status": "Pending"},
-            {"Assignee Name": "Lokesh Babu", "Department": "Arts Team", "Role": "Lead", "Task Description": "Concept Art Dhanushkoti", "Linked Scene": "Scene 3", "Target Date": "05-Mar-26", "Status": "Done"},
-            {"Assignee Name": "Sai Charan", "Department": "AI World", "Role": "Location Lead", "Task Description": "Base Gen", "Linked Scene": "Scene 29", "Target Date": "20-Mar-26", "Status": "Pending"}
+        // 🟢 DUMMY DATA FOR NEW GRID FORMAT (Only used if teamCsvUrl is empty)
+        const dummyTeamDataRaw = [
+            ["Arts Team", "Role", "11 Mar'25", "", "", "12 Mar'25", "", "", "13 Mar'25", "", "", "14 Mar'25", "", ""],
+            ["", "", "Task", "Internal", "External", "Task", "Internal", "External", "Task", "Internal", "External", "Task", "Internal", "External"],
+            ["Lokesh Babu ", "Lead", "Concept Art Sc 1", "Done", "Done", "Concept Art Sc 2", "WIP", "", "Concept Art Sc 2", "WIP", "", "Concept Art Sc 2", "WIP", ""], // Bottleneck demo!
+            ["Reshma. J", "Member", "Concept Art Sc 3", "Done", "Done", "Concept Art Sc 4", "WIP", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+            ["AI World", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+            ["Arts", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+            ["Sai Shankar", "Member", "Base Gen", "Done", "Done", "Env Polish", "WIP", "", "", "", "", "", "", ""]
         ];
 
         function isOverdue(dateStr, status) {
@@ -350,6 +351,8 @@
             let lower = (status || "").trim().toLowerCase();
             if (lower === "done" || lower === "approved" || lower === "ready" || lower === "cleared") return false;
             
+            // Clean '25 to 2025 for correct date parsing
+            dateStr = dateStr.replace("'", " 20");
             let targetDate = new Date(dateStr);
             if (isNaN(targetDate.getTime())) return false; 
             
@@ -475,9 +478,9 @@
             window.assetChart.update();
         }
 
-        function fetchCSV(url) {
+        function fetchCSV(url, useHeader = true) {
             return new Promise((resolve, reject) => {
-                Papa.parse(url, { download: true, header: true, complete: results => resolve(results.data), error: err => reject(err) });
+                Papa.parse(url, { download: true, header: useHeader, complete: results => resolve(results.data), error: err => reject(err) });
             });
         }
 
@@ -525,63 +528,151 @@
         }
 
         // ==========================================
-        // 🔴 TEAM TRACKER ENGINE (WITH HISTORY)
+        // 🔴 TEAM TRACKER HORIZONTAL CSV ENGINE
         // ==========================================
-        function processTeamData(teamData) {
+        function processTeamData2D(rawData) {
             let members = {};
+            if (!rawData || rawData.length < 2) return;
 
-            teamData.forEach(row => {
-                let name = (row['Assignee Name'] || "").trim();
-                if (!name) return;
+            // 1. Map all dates available across row 0
+            let dates = [];
+            let headerRow = rawData[0];
+            for (let c = 2; c < headerRow.length; c += 3) {
+                let rawDate = headerRow[c];
+                if (rawDate && rawDate.trim() !== "") {
+                    dates.push({ colIndex: c, dateStr: rawDate.trim() });
+                }
+            }
 
-                if (!members[name]) {
-                    members[name] = {
-                        name: name,
-                        safeId: 'artist_' + name.replace(/[^a-zA-Z0-9]/g, ''),
-                        dept: row['Department'] || "-",
-                        role: row['Role'] || "-",
-                        tasks: [],
-                        total: 0,
-                        done: 0
-                    };
+            let currentDept = headerRow[0] ? headerRow[0].trim() : "Team";
+            let currentSubDept = "";
+
+            // 2. Map all artists and aggregate their tasks row by row
+            for (let r = 2; r < rawData.length; r++) {
+                let row = rawData[r];
+                if (!row || row.length < 2) continue;
+                
+                let col0 = (row[0] || "").trim();
+                let col1 = (row[1] || "").trim();
+
+                if (!col0 && !col1) continue; // Blank row skip
+
+                if (col0 && !col1) {
+                    // This is a Department Header
+                    let isSub = ["Arts", "2D", "3D", "COMP", "VIDGEN"].includes(col0);
+                    if (isSub) {
+                        currentSubDept = col0;
+                    } else {
+                        currentDept = col0;
+                        currentSubDept = "";
+                    }
+                    continue;
                 }
 
-                members[name].tasks.push(row);
-                members[name].total++;
+                if (col0 && col1) {
+                    // This is an Artist Row
+                    let artistName = col0;
+                    let role = col1;
+                    let dept = currentSubDept ? `${currentDept} - ${currentSubDept}` : currentDept;
+                    
+                    if (!members[artistName]) {
+                        members[artistName] = {
+                            name: artistName,
+                            safeId: 'artist_' + artistName.replace(/[^a-zA-Z0-9]/g, ''),
+                            dept: dept,
+                            role: role,
+                            tasksMap: {}, // To group identical tasks
+                            totalTasks: 0,
+                            doneTasks: 0
+                        };
+                    }
 
-                let stat = (row['Status'] || "").toLowerCase();
-                if (stat === 'done' || stat === 'approved') members[name].done++;
-            });
+                    let m = members[artistName];
+                    
+                    dates.forEach(d => {
+                        let tDesc = (row[d.colIndex] || "").trim();
+                        let tInt = (row[d.colIndex + 1] || "").trim();
+                        let tExt = (row[d.colIndex + 2] || "").trim();
+                        
+                        if (tDesc) {
+                            if (!m.tasksMap[tDesc]) {
+                                m.tasksMap[tDesc] = {
+                                    desc: tDesc,
+                                    history: [],
+                                    latestStatus: "Pending",
+                                    latestDate: ""
+                                };
+                                m.totalTasks++;
+                            }
+                            
+                            // Default to WIP if they have a task assigned but no status typed yet
+                            let statusToUse = tInt ? tInt : (tExt ? tExt : "WIP"); 
+                            
+                            m.tasksMap[tDesc].history.push({
+                                dateStr: d.dateStr,
+                                internal: tInt,
+                                external: tExt,
+                                status: statusToUse
+                            });
+                            m.tasksMap[tDesc].latestStatus = statusToUse;
+                            m.tasksMap[tDesc].latestDate = d.dateStr;
+                        }
+                    });
+                }
+            }
 
+            // 3. Create HTML Elements
             let teamHtml = "";
             Object.values(members).forEach(m => {
+                let allTasks = Object.values(m.tasksMap);
                 
-                // Sort tasks chronologically by target date
-                m.tasks.sort((a, b) => new Date(a['Target Date'] || 0) - new Date(b['Target Date'] || 0));
-                
-                let pct = Math.round((m.done / m.total) * 100) || 0;
-                let barClass = pct === 100 ? "complete" : "";
+                m.doneTasks = allTasks.filter(t => {
+                    let s = t.latestStatus.toLowerCase();
+                    return s === 'done' || s === 'approved' || s === 'cleared' || s === 'ready';
+                }).length;
 
-                // Find the currently active task
-                let activeTask = m.tasks.find(t => {
-                    let s = (t['Status'] || "").toLowerCase();
-                    return s === 'wip' || s === 'progress' || s === 'feedback' || s === 'rework';
+                let pct = m.totalTasks > 0 ? Math.round((m.doneTasks / m.totalTasks) * 100) : 0;
+                let barClass = (pct === 100 && m.totalTasks > 0) ? "complete" : "";
+
+                let hasConcerningTask = false;
+                allTasks.forEach(t => {
+                    // BOTTLENECK RULE: Same task running for 3 or more days
+                    if (t.history.length >= 3) {
+                        let s = t.latestStatus.toLowerCase();
+                        if (!(s === 'done' || s === 'approved' || s === 'cleared' || s === 'ready')) {
+                            t.isConcerning = true;
+                            hasConcerningTask = true;
+                        }
+                    }
                 });
-                
-                if (!activeTask) activeTask = m.tasks.find(t => {
-                    let s = (t['Status'] || "").toLowerCase();
+
+                let activeTask = allTasks.find(t => {
+                    let s = t.latestStatus.toLowerCase();
+                    return s === 'wip' || s === 'progress' || s === 'feedback' || s === 'rework' || t.isConcerning;
+                }) || allTasks.find(t => {
+                    let s = t.latestStatus.toLowerCase();
                     return s !== 'done' && s !== 'approved';
-                });
-                
-                if (!activeTask) activeTask = m.tasks[m.tasks.length - 1];
+                }) || allTasks[allTasks.length - 1];
 
-                let taskDesc = activeTask ? `<strong>${activeTask['Task Description']}</strong><br><span style="font-size:10px;color:#888;">${activeTask['Linked Scene'] || ''}</span>` : "-";
-                let tDate = activeTask ? activeTask['Target Date'] : "";
-                let tStatus = activeTask ? activeTask['Status'] : "";
+                let taskDescUI = activeTask ? `<strong>${activeTask.desc}</strong>` : "-";
+                if (activeTask && activeTask.isConcerning) {
+                    taskDescUI += `<br><span style="color:#d32f2f; font-size:10px; font-weight:bold;">⚠️ Bottleneck (Spans ${activeTask.history.length} days)</span>`;
+                }
 
-                let expandBtn = `<button class="expand-btn" onclick="event.stopPropagation(); toggleTeamHistory('${m.safeId}')">View History ▼</button>`;
+                let tDate = activeTask ? activeTask.latestDate : "";
+                let tStatus = activeTask ? activeTask.latestStatus : "";
 
-                // MAIN ARTIST ROW
+                let healthUI = "";
+                if (hasConcerningTask) {
+                    healthUI = `<span style="color:#d32f2f; font-weight:bold; font-size:12px;">⚠️ BOTTLENECK</span>`;
+                } else if (pct === 100 && m.totalTasks > 0) {
+                    healthUI = `<span style="color:#10b981; font-weight:bold; font-size:12px;">✔ CLEAR</span>`;
+                } else {
+                    healthUI = `<span style="color:#3b82f6; font-weight:bold; font-size:12px;">ON TRACK</span>`;
+                }
+
+                let expandBtn = `<button class="expand-btn" onclick="event.stopPropagation(); toggleTeamHistory('${m.safeId}')">View Timeline ▼</button>`;
+
                 teamHtml += `
                 <tr class="parent-row" onclick="toggleTeamHistory('${m.safeId}')">
                     <td style="text-align:left;">
@@ -590,41 +681,58 @@
                     </td>
                     <td><span style="font-size:11px; background:#f1f5f9; padding:4px 8px; border-radius:4px; color:#475569;">${m.role}</span></td>
                     <td>
-                        <div style="font-size: 11px; font-weight:bold; margin-bottom:4px; color:#475569;">${m.done} / ${m.total} Tasks (${pct}%)</div>
+                        <div style="font-size: 11px; font-weight:bold; margin-bottom:4px; color:#475569;">${m.doneTasks} / ${m.totalTasks} Tasks (${pct}%)</div>
                         <div class="team-bar-bg">
                             <div class="team-bar-fg ${barClass}" style="width: ${pct}%;"></div>
                         </div>
                     </td>
-                    <td>${taskDesc}</td>
+                    <td>${taskDescUI}</td>
                     <td>${getBadgeHTML(tStatus, tDate)}</td>
-                    <td>
-                        ${isOverdue(tDate, tStatus) ? `<span style="color:#d32f2f; font-weight:bold; font-size:12px;">⚠️ OVERDUE</span>` : (pct === 100 ? `<span style="color:#10b981; font-weight:bold; font-size:12px;">✔ CLEAR</span>` : `<span style="color:#3b82f6; font-weight:bold; font-size:12px;">ON TRACK</span>`)}
-                    </td>
+                    <td>${healthUI}</td>
                 </tr>`;
 
-                // HIDDEN HISTORY SUB-TABLE
-                let historyHtml = `<tr class="shot-row ${m.safeId}"><td colspan="6" style="padding: 15px 25px; background: #fafafa; border-bottom: 2px solid #e2e8f0;">`;
-                historyHtml += `<h4 style="margin:0 0 10px 0; color:#475569; font-size: 13px;">Task History timeline for ${m.name}</h4>`;
-                historyHtml += `<table class="history-table">
-                                    <tr>
-                                        <th style="width:120px;">Target Date</th>
-                                        <th>Task Description</th>
-                                        <th>Linked Scene</th>
-                                        <th>Final Status</th>
-                                    </tr>`;
-                
-                m.tasks.forEach(t => {
-                    // Check if past date so we can style it differently if we want
-                    historyHtml += `<tr>
-                                        <td><strong>${t['Target Date'] || '-'}</strong></td>
-                                        <td>${t['Task Description'] || '-'}</td>
-                                        <td>${t['Linked Scene'] || '-'}</td>
-                                        <td>${getBadgeHTML(t['Status'], '')}</td>
-                                    </tr>`;
-                });
-                historyHtml += `</table></td></tr>`;
-                
-                teamHtml += historyHtml;
+                // Render Inner History Table
+                if (allTasks.length > 0) {
+                    let historyHtml = `<tr class="shot-row ${m.safeId}"><td colspan="6" style="padding: 15px 25px; background: #fafafa; border-bottom: 2px solid #e2e8f0;">`;
+                    historyHtml += `<h4 style="margin:0 0 10px 0; color:#475569; font-size: 13px;">Task Timeline for ${m.name}</h4>`;
+                    historyHtml += `<table class="history-table">
+                                        <tr>
+                                            <th style="width:120px;">Date</th>
+                                            <th>Task Description</th>
+                                            <th>Internal Status</th>
+                                            <th>External Status</th>
+                                            <th>Health</th>
+                                        </tr>`;
+                    
+                    let flatHistory = [];
+                    allTasks.forEach(t => {
+                        t.history.forEach(h => {
+                            flatHistory.push({
+                                dateStr: h.dateStr,
+                                desc: t.desc,
+                                internal: h.internal,
+                                external: h.external,
+                                isConcerning: t.isConcerning && (t.history.length >= 3)
+                            });
+                        });
+                    });
+
+                    // Sort chronologically
+                    flatHistory.sort((a, b) => new Date(a.dateStr.replace("'", " 20")) - new Date(b.dateStr.replace("'", " 20")));
+
+                    flatHistory.forEach(h => {
+                        let hHealth = h.isConcerning ? `<span style="color:#d32f2f; font-weight:bold; font-size:11px;">⚠️ Delayed Task</span>` : `<span style="color:#10b981; font-weight:bold; font-size:11px;">Normal</span>`;
+                        historyHtml += `<tr>
+                                            <td><strong>${h.dateStr}</strong></td>
+                                            <td>${h.desc}</td>
+                                            <td>${getBadgeHTML(h.internal, "")}</td>
+                                            <td>${getBadgeHTML(h.external, "")}</td>
+                                            <td>${hHealth}</td>
+                                        </tr>`;
+                    });
+                    historyHtml += `</table></td></tr>`;
+                    teamHtml += historyHtml;
+                }
             });
 
             document.getElementById('teamTableBody').innerHTML = teamHtml || "<tr><td colspan='6'>No valid team data found.</td></tr>";
@@ -632,19 +740,20 @@
 
         async function buildDashboard() {
             try {
+                // Modified Fetching Logic for 2D Array format on Team CSV
                 let teamFetchPromise = teamCsvUrl && teamCsvUrl.trim() !== "" 
-                    ? fetchCSV(teamCsvUrl) 
-                    : Promise.resolve(dummyTeamData);
+                    ? fetchCSV(teamCsvUrl, false) // False ensures it parses as 2D Array!
+                    : Promise.resolve(dummyTeamDataRaw);
 
                 const [scenesData, assetsData, locationsData, teamData] = await Promise.all([
-                    fetchCSV(scenesCsvUrl),
-                    fetchCSV(assetsCsvUrl),
-                    fetchCSV(locationsCsvUrl),
+                    fetchCSV(scenesCsvUrl, true),
+                    fetchCSV(assetsCsvUrl, true),
+                    fetchCSV(locationsCsvUrl, true),
                     teamFetchPromise
                 ]);
 
-                // Render Team Tab Data
-                processTeamData(teamData);
+                // Call the new parser
+                processTeamData2D(teamData);
 
                 globalPieCounts = { approved: 0, wip: 0, rework: 0, notstarted: 0 };
                 window.globalScenesArray = [];
