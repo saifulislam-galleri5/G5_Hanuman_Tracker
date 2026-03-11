@@ -84,7 +84,6 @@
         .team-bar-fg { height: 100%; background-color: #3b82f6; border-radius: 4px; transition: width 0.5s ease; }
         .team-bar-fg.complete { background-color: #10b981; }
         
-        /* Inner table for task history */
         .history-table { width: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 6px; border-collapse: collapse; margin-top: 5px; }
         .history-table th { background: #f8f9fa; font-size: 11px; padding: 6px 10px; color: #475569; }
         .history-table td { font-size: 12px; padding: 6px 10px; border-bottom: 1px solid #f1f5f9; }
@@ -330,15 +329,14 @@
         const assetsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=366020038&nocache=${ts}`; 
         const locationsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340&nocache=${ts}`; 
         
-        // 🚀 TEAM CSV LINK GOES HERE (Leave blank to use Demo Mode)
-        // Add your Google sheet CSV link here once you publish the "Task Tracker - Sheet1" tab to web
-        const teamCsvUrl = "https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/edit?pli=1&gid=162642321#gid=162642321"; 
+        // 🚀 TEAM CSV LINK GOES HERE
+        const teamCsvUrl = ""; 
 
         // 🟢 DUMMY DATA FOR NEW GRID FORMAT (Only used if teamCsvUrl is empty)
         const dummyTeamDataRaw = [
             ["Arts Team", "Role", "11 Mar'25", "", "", "12 Mar'25", "", "", "13 Mar'25", "", "", "14 Mar'25", "", ""],
             ["", "", "Task", "Internal", "External", "Task", "Internal", "External", "Task", "Internal", "External", "Task", "Internal", "External"],
-            ["Lokesh Babu ", "Lead", "Concept Art Sc 1", "Done", "Done", "Concept Art Sc 2", "WIP", "", "Concept Art Sc 2", "WIP", "", "Concept Art Sc 2", "WIP", ""], // Bottleneck demo!
+            ["Lokesh Babu ", "Lead", "Concept Art Sc 1", "Done", "Done", "Concept Art Sc 2", "WIP", "", "Concept Art Sc 2", "WIP", "", "Concept Art Sc 2", "WIP", ""],
             ["Reshma. J", "Member", "Concept Art Sc 3", "Done", "Done", "Concept Art Sc 4", "WIP", "", "", "", "", "", "", ""],
             ["", "", "", "", "", "", "", "", "", "", "", "", "", ""],
             ["AI World", "", "", "", "", "", "", "", "", "", "", "", "", ""],
@@ -351,7 +349,6 @@
             let lower = (status || "").trim().toLowerCase();
             if (lower === "done" || lower === "approved" || lower === "ready" || lower === "cleared") return false;
             
-            // Clean '25 to 2025 for correct date parsing
             dateStr = dateStr.replace("'", " 20");
             let targetDate = new Date(dateStr);
             if (isNaN(targetDate.getTime())) return false; 
@@ -480,7 +477,23 @@
 
         function fetchCSV(url, useHeader = true) {
             return new Promise((resolve, reject) => {
-                Papa.parse(url, { download: true, header: useHeader, complete: results => resolve(results.data), error: err => reject(err) });
+                Papa.parse(url, { 
+                    download: true, 
+                    header: useHeader, 
+                    complete: results => {
+                        // ERROR SHIELD: Detect if we received a Google Sheets Webpage instead of a CSV
+                        if (results.data && results.data.length > 0) {
+                            let testCell = String(useHeader ? Object.keys(results.data[0])[0] : results.data[0][0]);
+                            if (testCell.includes("<!DOCTYPE") || testCell.includes("_bootstrap")) {
+                                console.error("ERROR: Received a Webpage instead of a CSV. Check your Google Sheet URL formatting.");
+                                resolve([]); // Return empty to protect the UI
+                                return;
+                            }
+                        }
+                        resolve(results.data);
+                    }, 
+                    error: err => reject(err) 
+                });
             });
         }
 
@@ -534,31 +547,28 @@
             let members = {};
             if (!rawData || rawData.length < 2) return;
 
-            // 1. Map all dates available across row 0
             let dates = [];
             let headerRow = rawData[0];
             for (let c = 2; c < headerRow.length; c += 3) {
                 let rawDate = headerRow[c];
-                if (rawDate && rawDate.trim() !== "") {
-                    dates.push({ colIndex: c, dateStr: rawDate.trim() });
+                if (rawDate && String(rawDate).trim() !== "") {
+                    dates.push({ colIndex: c, dateStr: String(rawDate).trim() });
                 }
             }
 
-            let currentDept = headerRow[0] ? headerRow[0].trim() : "Team";
+            let currentDept = headerRow[0] ? String(headerRow[0]).trim() : "Team";
             let currentSubDept = "";
 
-            // 2. Map all artists and aggregate their tasks row by row
             for (let r = 2; r < rawData.length; r++) {
                 let row = rawData[r];
                 if (!row || row.length < 2) continue;
                 
-                let col0 = (row[0] || "").trim();
-                let col1 = (row[1] || "").trim();
+                let col0 = String(row[0] || "").trim();
+                let col1 = String(row[1] || "").trim();
 
-                if (!col0 && !col1) continue; // Blank row skip
+                if (!col0 && !col1) continue; 
 
                 if (col0 && !col1) {
-                    // This is a Department Header
                     let isSub = ["Arts", "2D", "3D", "COMP", "VIDGEN"].includes(col0);
                     if (isSub) {
                         currentSubDept = col0;
@@ -570,7 +580,6 @@
                 }
 
                 if (col0 && col1) {
-                    // This is an Artist Row
                     let artistName = col0;
                     let role = col1;
                     let dept = currentSubDept ? `${currentDept} - ${currentSubDept}` : currentDept;
@@ -581,7 +590,7 @@
                             safeId: 'artist_' + artistName.replace(/[^a-zA-Z0-9]/g, ''),
                             dept: dept,
                             role: role,
-                            tasksMap: {}, // To group identical tasks
+                            tasksMap: {}, 
                             totalTasks: 0,
                             doneTasks: 0
                         };
@@ -590,9 +599,9 @@
                     let m = members[artistName];
                     
                     dates.forEach(d => {
-                        let tDesc = (row[d.colIndex] || "").trim();
-                        let tInt = (row[d.colIndex + 1] || "").trim();
-                        let tExt = (row[d.colIndex + 2] || "").trim();
+                        let tDesc = String(row[d.colIndex] || "").trim();
+                        let tInt = String(row[d.colIndex + 1] || "").trim();
+                        let tExt = String(row[d.colIndex + 2] || "").trim();
                         
                         if (tDesc) {
                             if (!m.tasksMap[tDesc]) {
@@ -605,7 +614,6 @@
                                 m.totalTasks++;
                             }
                             
-                            // Default to WIP if they have a task assigned but no status typed yet
                             let statusToUse = tInt ? tInt : (tExt ? tExt : "WIP"); 
                             
                             m.tasksMap[tDesc].history.push({
@@ -621,7 +629,6 @@
                 }
             }
 
-            // 3. Create HTML Elements
             let teamHtml = "";
             Object.values(members).forEach(m => {
                 let allTasks = Object.values(m.tasksMap);
@@ -636,7 +643,6 @@
 
                 let hasConcerningTask = false;
                 allTasks.forEach(t => {
-                    // BOTTLENECK RULE: Same task running for 3 or more days
                     if (t.history.length >= 3) {
                         let s = t.latestStatus.toLowerCase();
                         if (!(s === 'done' || s === 'approved' || s === 'cleared' || s === 'ready')) {
@@ -691,7 +697,6 @@
                     <td>${healthUI}</td>
                 </tr>`;
 
-                // Render Inner History Table
                 if (allTasks.length > 0) {
                     let historyHtml = `<tr class="shot-row ${m.safeId}"><td colspan="6" style="padding: 15px 25px; background: #fafafa; border-bottom: 2px solid #e2e8f0;">`;
                     historyHtml += `<h4 style="margin:0 0 10px 0; color:#475569; font-size: 13px;">Task Timeline for ${m.name}</h4>`;
@@ -717,7 +722,6 @@
                         });
                     });
 
-                    // Sort chronologically
                     flatHistory.sort((a, b) => new Date(a.dateStr.replace("'", " 20")) - new Date(b.dateStr.replace("'", " 20")));
 
                     flatHistory.forEach(h => {
@@ -735,14 +739,13 @@
                 }
             });
 
-            document.getElementById('teamTableBody').innerHTML = teamHtml || "<tr><td colspan='6'>No valid team data found.</td></tr>";
+            document.getElementById('teamTableBody').innerHTML = teamHtml || "<tr><td colspan='6'>No valid team data found. Check your CSV link format.</td></tr>";
         }
 
         async function buildDashboard() {
             try {
-                // Modified Fetching Logic for 2D Array format on Team CSV
                 let teamFetchPromise = teamCsvUrl && teamCsvUrl.trim() !== "" 
-                    ? fetchCSV(teamCsvUrl, false) // False ensures it parses as 2D Array!
+                    ? fetchCSV(teamCsvUrl, false) 
                     : Promise.resolve(dummyTeamDataRaw);
 
                 const [scenesData, assetsData, locationsData, teamData] = await Promise.all([
@@ -752,7 +755,6 @@
                     teamFetchPromise
                 ]);
 
-                // Call the new parser
                 processTeamData2D(teamData);
 
                 globalPieCounts = { approved: 0, wip: 0, rework: 0, notstarted: 0 };
@@ -977,7 +979,7 @@
 
             } catch (error) {
                 console.error("Error building dashboard:", error);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan='9' style='color:red;'>Error connecting to Google Sheets. Check links.</td></tr>`;
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan='9' style='color:red;'>Error loading data: Ensure all Google Sheets links are valid CSV exports.</td></tr>`;
             }
         }
 
