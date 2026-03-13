@@ -45,14 +45,15 @@
         .tab-content { display: none; background: white; padding: 20px; border-radius: 0 8px 8px 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef; border-top: none; overflow-x: auto;}
         .tab-content.active { display: block; }
         
-        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1400px; }
         th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #f1f3f5; vertical-align: middle;}
         th { background-color: #f8f9fa; color: #495057; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
         td:first-child, th:first-child { text-align: left; padding-left: 15px;}
         tr.parent-row { background-color: #ffffff; border-bottom: 2px solid #e2e8f0; }
         tr.parent-row:hover { background-color: #f1f5f9; cursor: pointer;}
         
-        .desc-col { text-align: left !important; font-size: 11px; max-width: 250px; line-height: 1.4; color: #475569; }
+        .desc-col { text-align: left !important; font-size: 11px; max-width: 200px; line-height: 1.4; color: #475569; }
+        .loc-col { text-align: left !important; font-size: 11px; font-weight: 600; color: #1e3a8a; }
         
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 70px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
         .status-done { background-color: #C1E1C1; color: #2E5C2E; } 
@@ -88,6 +89,10 @@
         .sort-banner { display: flex; justify-content: space-between; align-items: center; background-color: #fff3e0; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffcc80; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .sort-select { padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; color: #333; font-size: 14px; cursor: pointer; transition: all 0.2s ease; outline: none; background-color: white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
         .sort-select:hover { border-color: #ff9800; }
+        
+        /* 🟢 EXCEL-LIKE COLUMN FILTER CSS */
+        .col-filter { width: 100%; margin-top: 6px; padding: 4px 2px; font-size: 10px; font-weight: bold; color: #475569; border: 1px solid #cbd5e1; border-radius: 4px; background-color: white; outline: none; cursor: pointer;}
+        .col-filter:hover { border-color: #94a3b8; }
         
         .team-bar-bg { width: 100%; background-color: #e9ecef; height: 8px; border-radius: 4px; margin-top: 4px; overflow: hidden; }
         .team-bar-fg { height: 100%; background-color: #3b82f6; border-radius: 4px; transition: width 0.5s ease; }
@@ -225,28 +230,43 @@
     </div>
 
     <div id="characters" class="tab-content">
-        <div class="sort-banner" style="padding: 10px 15px; margin-bottom: 15px; background-color: #f1f5f9; border-color: #cbd5e1;">
-            <div style="font-weight: bold; color: #334155; font-size: 14px;">🦸‍♂️ Filter Characters & Props</div>
-            <select class="sort-select" style="padding: 6px 12px; font-size: 12px; min-width: 180px;" onchange="window.currentAssetFilter=this.value; renderAssetsTable();">
-                <option value="all">View All Assets</option>
-                <option value="done">✔ 3D Asset Ready (Done)</option>
-                <option value="wip">⏳ 3D Asset Ready (WIP)</option>
-                <option value="rework">✖ 3D Asset Ready (Rework)</option>
-                <option value="pending">Pending / Not Started</option>
-            </select>
-        </div>
         <table>
             <thead>
                 <tr>
-                    <th style="width: 220px;">Asset Name</th>
-                    <th>Category</th>
-                    <th>Linked Scenes</th>
-                    <th>References</th>
-                    <th>Sketches</th>
-                    <th>AI Asset</th>
-                    <th>3D Outsourced</th>
-                    <th>3D Asset Ready</th>
-                    <th>Casting</th>
+                    <th style="width: 220px; vertical-align:top;">Asset Name</th>
+                    <th style="vertical-align:top;">Category</th>
+                    <th style="vertical-align:top;">Linked Scenes</th>
+                    
+                    <th style="width:110px; vertical-align:top;">References
+                        <select id="filter-asset-ref" class="col-filter" onchange="renderAssetsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">Sketches
+                        <select id="filter-asset-sketch" class="col-filter" onchange="renderAssetsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">AI Asset
+                        <select id="filter-asset-ai" class="col-filter" onchange="renderAssetsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">3D Outsourced
+                        <select id="filter-asset-out" class="col-filter" onchange="renderAssetsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">3D Asset Ready
+                        <select id="filter-asset-ready" class="col-filter" onchange="renderAssetsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">Casting
+                        <select id="filter-asset-cast" class="col-filter" onchange="renderAssetsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
                 </tr>
             </thead>
             <tbody id="assetsTableBody">
@@ -256,28 +276,43 @@
     </div>
 
     <div id="locations" class="tab-content">
-        <div class="sort-banner" style="padding: 10px 15px; margin-bottom: 15px; background-color: #f1f5f9; border-color: #cbd5e1;">
-            <div style="font-weight: bold; color: #334155; font-size: 14px;">🌍 Filter Worlds & Locations</div>
-            <select class="sort-select" style="padding: 6px 12px; font-size: 12px; min-width: 180px;" onchange="window.currentLocationFilter=this.value; renderLocationsTable();">
-                <option value="all">View All Locations</option>
-                <option value="done">✔ Final Status (Done)</option>
-                <option value="wip">⏳ Final Status (WIP)</option>
-                <option value="rework">✖ Final Status (Rework)</option>
-                <option value="pending">Pending / Not Started</option>
-            </select>
-        </div>
         <table>
             <thead>
                 <tr>
-                    <th style="width: 220px;">World Name</th>
-                    <th>Category</th>
-                    <th>Linked Scenes</th>
-                    <th>References</th>
-                    <th>Sketches</th>
-                    <th>AI Asset</th>
-                    <th>3D Scaling</th>
-                    <th>3D Details/Texturing</th>
-                    <th>Final Status</th>
+                    <th style="width: 220px; vertical-align:top;">World Name</th>
+                    <th style="vertical-align:top;">Category</th>
+                    <th style="vertical-align:top;">Linked Scenes</th>
+                    
+                    <th style="width:110px; vertical-align:top;">References
+                        <select id="filter-loc-ref" class="col-filter" onchange="renderLocationsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">Sketches
+                        <select id="filter-loc-sketch" class="col-filter" onchange="renderLocationsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">AI Asset
+                        <select id="filter-loc-ai" class="col-filter" onchange="renderLocationsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">3D Scaling
+                        <select id="filter-loc-scale" class="col-filter" onchange="renderLocationsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">3D Details
+                        <select id="filter-loc-detail" class="col-filter" onchange="renderLocationsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
+                    <th style="width:110px; vertical-align:top;">Final Status
+                        <select id="filter-loc-final" class="col-filter" onchange="renderLocationsTable()">
+                            <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
+                        </select>
+                    </th>
                 </tr>
             </thead>
             <tbody id="locationsTableBody">
@@ -307,10 +342,7 @@
         window.globalScenesArray = [];
         window.globalAssetsData = [];
         window.globalLocationsData = [];
-        
         window.currentSortMode = 'default'; 
-        window.currentAssetFilter = 'all';
-        window.currentLocationFilter = 'all';
 
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
@@ -568,23 +600,41 @@
         }
 
         // ==========================================
-        // 🔴 FILTERED RENDERING ENGINES
+        // 🟢 EXCEL-STYLE COLUMN FILTERS ENGINE
         // ==========================================
-        function renderLocationsTable() {
-            let filter = window.currentLocationFilter;
-            let locHtml = "";
+        function matchesFilter(val, filterVal) {
+            if (filterVal === 'all') return true;
+            let lower = String(val || "").trim().toLowerCase();
             
-            window.globalLocationsData.forEach(row => {
-                let status = String(row['Final Status'] || "").toLowerCase();
-                let isDone = status === 'done' || status === 'approved' || status === 'ready' || status === 'cleared';
-                let isWip = status === 'wip' || status === 'progress' || status === 'in progress';
-                let isRew = status === 'rework' || status === 'feedback';
-                let isPending = !isDone && !isWip && !isRew;
+            let isDone = lower === 'done' || lower === 'approved' || lower === 'ready' || lower === 'cleared';
+            let isWip = lower === 'wip' || lower === 'progress' || lower === 'in progress';
+            let isRew = lower === 'rework' || lower === 'feedback';
+            let isNa = lower === 'not required' || lower === 'n/a' || lower === 'na';
+            let isPending = !isDone && !isWip && !isRew && !isNa;
 
-                if (filter === 'done' && !isDone) return;
-                if (filter === 'wip' && !isWip) return;
-                if (filter === 'rework' && !isRew) return;
-                if (filter === 'pending' && !isPending) return;
+            if (filterVal === 'done') return isDone;
+            if (filterVal === 'wip') return isWip;
+            if (filterVal === 'rework') return isRew;
+            if (filterVal === 'pending') return isPending;
+            return true;
+        }
+
+        function renderLocationsTable() {
+            let refF = document.getElementById('filter-loc-ref').value;
+            let sketchF = document.getElementById('filter-loc-sketch').value;
+            let aiF = document.getElementById('filter-loc-ai').value;
+            let scaleF = document.getElementById('filter-loc-scale').value;
+            let detailF = document.getElementById('filter-loc-detail').value;
+            let finalF = document.getElementById('filter-loc-final').value;
+
+            let locHtml = "";
+            window.globalLocationsData.forEach(row => {
+                if (!matchesFilter(row['References'], refF)) return;
+                if (!matchesFilter(row['Sketches'], sketchF)) return;
+                if (!matchesFilter(row['AI Asset'], aiF)) return;
+                if (!matchesFilter(row['3D Scaling'], scaleF)) return;
+                if (!matchesFilter(row['3D Details'], detailF)) return;
+                if (!matchesFilter(row['Final Status'], finalF)) return;
 
                 let worldName = String(row['World Name']).trim();
                 let catColor = String(row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
@@ -602,24 +652,25 @@
                     <td>${getBadgeHTML(row['Final Status'], row['Final Status Date'], true)}</td>
                 </tr>`;
             });
-            document.getElementById('locationsTableBody').innerHTML = locHtml || "<tr><td colspan='9'>No locations match your filter.</td></tr>";
+            document.getElementById('locationsTableBody').innerHTML = locHtml || "<tr><td colspan='9'>No locations match your applied filters.</td></tr>";
         }
 
         function renderAssetsTable() {
-            let filter = window.currentAssetFilter;
+            let refF = document.getElementById('filter-asset-ref').value;
+            let sketchF = document.getElementById('filter-asset-sketch').value;
+            let aiF = document.getElementById('filter-asset-ai').value;
+            let outF = document.getElementById('filter-asset-out').value;
+            let readyF = document.getElementById('filter-asset-ready').value;
+            let castF = document.getElementById('filter-asset-cast').value;
+
             let assetsHtml = "";
-
             window.globalAssetsData.forEach(row => {
-                let status = String(row['3D Asset Ready'] || "").toLowerCase();
-                let isDone = status === 'done' || status === 'approved' || status === 'ready' || status === 'cleared';
-                let isWip = status === 'wip' || status === 'progress' || status === 'in progress';
-                let isRew = status === 'rework' || status === 'feedback';
-                let isPending = !isDone && !isWip && !isRew;
-
-                if (filter === 'done' && !isDone) return;
-                if (filter === 'wip' && !isWip) return;
-                if (filter === 'rework' && !isRew) return;
-                if (filter === 'pending' && !isPending) return;
+                if (!matchesFilter(row['References'], refF)) return;
+                if (!matchesFilter(row['Sketches'], sketchF)) return;
+                if (!matchesFilter(row['AI Asset'], aiF)) return;
+                if (!matchesFilter(row['3D Outsourced'], outF)) return;
+                if (!matchesFilter(row['3D Asset Ready'], readyF)) return;
+                if (!matchesFilter(row['Casting'], castF)) return;
 
                 assetsHtml += `
                 <tr>
@@ -634,7 +685,7 @@
                     <td>${getBadgeHTML(row['Casting'], row['Casting Date'])}</td>
                 </tr>`;
             });
-            document.getElementById('assetsTableBody').innerHTML = assetsHtml || "<tr><td colspan='9'>No assets match your filter.</td></tr>";
+            document.getElementById('assetsTableBody').innerHTML = assetsHtml || "<tr><td colspan='9'>No assets match your applied filters.</td></tr>";
         }
 
         function renderScenesTable() {
@@ -684,18 +735,13 @@
                     </tr>`;
                 });
             });
-            
-            if (scenesHtml === "") scenesHtml = "<tr><td colspan='11'>No data found. Ensure your Master Funnel CSV has correct column names.</td></tr>";
-            document.getElementById('tableBody').innerHTML = scenesHtml;
+            document.getElementById('tableBody').innerHTML = scenesHtml || "<tr><td colspan='11'>No data found.</td></tr>";
         }
 
-        // ==========================================
-        // 🔴 TEAM TRACKER: DEPARTMENT GROUPING ENGINE
-        // ==========================================
         function processTeamData2D(rawData) {
             let members = {};
             if (!rawData || rawData.length < 2) {
-                document.getElementById('teamTableBody').innerHTML = "<div style='padding:20px; text-align:center; color:#888; background:white; border-radius:8px;'>No valid team data found. Check your Google Sheet publication settings.</div>";
+                document.getElementById('teamTableBody').innerHTML = "<div style='padding:20px; text-align:center; color:#888; background:white; border-radius:8px;'>No valid team data found. Check your CSV link format.</div>";
                 return;
             }
 
@@ -968,14 +1014,14 @@
                     document.getElementById('timeline-text').innerText = `Production officially begins March 3rd!`;
                 }
 
-                // PROCESS LOCATIONS 
+                // 🟢 LOCATIONS PROCESSING
                 let locStatsTracker = { done: 0, wip: 0, rew: 0 };
                 let totalLocations = 0; 
                 let sceneWorldMap = {}; 
 
                 locationsData.forEach(row => {
                     if(!row['World Name']) return;
-                    window.globalLocationsData.push(row); // Save for filter rendering
+                    window.globalLocationsData.push(row); 
                     
                     totalLocations++;
                     let status = String(row['Final Status'] || "").toLowerCase();
@@ -1000,17 +1046,17 @@
                         else if (isRew) sceneWorldMap[scId].rew++;
                     });
                 });
-                renderLocationsTable(); // Render using the new filter function
+                renderLocationsTable();
 
-                // PROCESS ASSETS
+                // 🟢 ASSETS PROCESSING
                 assetsData.forEach(row => {
                     if(!row['Asset Name']) return;
-                    window.globalAssetsData.push(row); // Save for filter rendering
+                    window.globalAssetsData.push(row); 
                     updatePieChart(row['AI Asset']);
                 });
-                renderAssetsTable(); // Render using the new filter function
+                renderAssetsTable();
 
-                // PROCESS SCENES
+                // 🟢 SCENES PROCESSING
                 let scenesMap = {}; let currentSceneId = null;
                 let counts = {
                     sb: { done: 0, wip: 0 }, 
