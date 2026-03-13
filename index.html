@@ -12,6 +12,7 @@
         .progress-container { width: 100%; background-color: #e9ecef; border-radius: 12px; margin-bottom: 25px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); height: 24px; overflow: hidden;}
         .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #AEC6CF, #77DD77); text-align: center; line-height: 24px; color: white; font-weight: bold; font-size: 12px; transition: width 0.8s ease-in-out; }
         
+        /* 10 Cards in a 5-column layout */
         .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 25px; }
         .card { background: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #AEC6CF; transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between;}
         .card:hover { transform: translateY(-3px); }
@@ -19,6 +20,7 @@
         .card .number { font-size: 22px; font-weight: bold; color: #2c3e50; margin: 5px 0;}
         .card .target { font-size: 11px; color: #888; font-weight: bold; margin-bottom: 8px;}
         
+        /* Highlighted Cards CSS */
         .card-highlight-st { background-color: #fffff4; border: 2px solid #e5e500; box-shadow: 0 4px 12px rgba(229, 229, 0, 0.2) !important; border-top-width: 4px; border-top-color: #e5e500; }
         .card-highlight-mo { background-color: #f0f8ff; border: 2px solid #5fa8d3; box-shadow: 0 4px 12px rgba(95, 168, 211, 0.2) !important; border-top-width: 4px; border-top-color: #5fa8d3; }
 
@@ -43,15 +45,14 @@
         .tab-content { display: none; background: white; padding: 20px; border-radius: 0 8px 8px 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef; border-top: none; overflow-x: auto;}
         .tab-content.active { display: block; }
         
-        table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
         th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #f1f3f5; vertical-align: middle;}
         th { background-color: #f8f9fa; color: #495057; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
         td:first-child, th:first-child { text-align: left; padding-left: 15px;}
         tr.parent-row { background-color: #ffffff; border-bottom: 2px solid #e2e8f0; }
         tr.parent-row:hover { background-color: #f1f5f9; cursor: pointer;}
         
-        .desc-col { text-align: left !important; font-size: 11px; max-width: 200px; line-height: 1.4; color: #475569; }
-        .loc-col { text-align: left !important; font-size: 11px; font-weight: 600; color: #1e3a8a; }
+        .desc-col { text-align: left !important; font-size: 11px; max-width: 250px; line-height: 1.4; color: #475569; }
         
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 70px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
         .status-done { background-color: #C1E1C1; color: #2E5C2E; } 
@@ -205,9 +206,8 @@
             <thead>
                 <tr>
                     <th style="width: 180px;">Scene / Shot</th>
-                    <th style="width: 220px;">Description</th>
+                    <th style="width: 250px;">Description</th>
                     <th style="width: 70px;">Duration</th>
-                    <th style="width: 150px;">Location(s)</th>
                     <th class="col-overall-status">Scene Status</th>
                     <th>Storyboard</th>
                     <th>World (Env)</th>
@@ -219,12 +219,22 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <tr><td colspan="12" class="loading-text">Fetching Scenes & Shots data from Google Sheets...</td></tr>
+                <tr><td colspan="11" class="loading-text">Fetching Scenes & Shots data from Google Sheets...</td></tr>
             </tbody>
         </table>
     </div>
 
     <div id="characters" class="tab-content">
+        <div class="sort-banner" style="padding: 10px 15px; margin-bottom: 15px; background-color: #f1f5f9; border-color: #cbd5e1;">
+            <div style="font-weight: bold; color: #334155; font-size: 14px;">🦸‍♂️ Filter Characters & Props</div>
+            <select class="sort-select" style="padding: 6px 12px; font-size: 12px; min-width: 180px;" onchange="window.currentAssetFilter=this.value; renderAssetsTable();">
+                <option value="all">View All Assets</option>
+                <option value="done">✔ 3D Asset Ready (Done)</option>
+                <option value="wip">⏳ 3D Asset Ready (WIP)</option>
+                <option value="rework">✖ 3D Asset Ready (Rework)</option>
+                <option value="pending">Pending / Not Started</option>
+            </select>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -246,6 +256,16 @@
     </div>
 
     <div id="locations" class="tab-content">
+        <div class="sort-banner" style="padding: 10px 15px; margin-bottom: 15px; background-color: #f1f5f9; border-color: #cbd5e1;">
+            <div style="font-weight: bold; color: #334155; font-size: 14px;">🌍 Filter Worlds & Locations</div>
+            <select class="sort-select" style="padding: 6px 12px; font-size: 12px; min-width: 180px;" onchange="window.currentLocationFilter=this.value; renderLocationsTable();">
+                <option value="all">View All Locations</option>
+                <option value="done">✔ Final Status (Done)</option>
+                <option value="wip">⏳ Final Status (WIP)</option>
+                <option value="rework">✖ Final Status (Rework)</option>
+                <option value="pending">Pending / Not Started</option>
+            </select>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -285,7 +305,12 @@
         const PROJECT_END   = "2026-05-10"; 
 
         window.globalScenesArray = [];
+        window.globalAssetsData = [];
+        window.globalLocationsData = [];
+        
         window.currentSortMode = 'default'; 
+        window.currentAssetFilter = 'all';
+        window.currentLocationFilter = 'all';
 
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
@@ -517,7 +542,6 @@
             window.assetChart.update();
         }
 
-        // UPDATED FETCH: Catches exact page rejection so Master Funnel doesn't crash if 1 link is broken
         function fetchCSV(url, useHeader = true) {
             return new Promise((resolve) => {
                 Papa.parse(url, { 
@@ -536,11 +560,81 @@
                         resolve(results.data || []);
                     }, 
                     error: err => {
-                        console.warn("Fetch Notice: Could not load one of the CSV links. Continuing with blank data for that module.", err);
+                        console.warn("Fetch Notice: Could not load one of the CSV links.", err);
                         resolve([]); 
                     }
                 });
             });
+        }
+
+        // ==========================================
+        // 🔴 FILTERED RENDERING ENGINES
+        // ==========================================
+        function renderLocationsTable() {
+            let filter = window.currentLocationFilter;
+            let locHtml = "";
+            
+            window.globalLocationsData.forEach(row => {
+                let status = String(row['Final Status'] || "").toLowerCase();
+                let isDone = status === 'done' || status === 'approved' || status === 'ready' || status === 'cleared';
+                let isWip = status === 'wip' || status === 'progress' || status === 'in progress';
+                let isRew = status === 'rework' || status === 'feedback';
+                let isPending = !isDone && !isWip && !isRew;
+
+                if (filter === 'done' && !isDone) return;
+                if (filter === 'wip' && !isWip) return;
+                if (filter === 'rework' && !isRew) return;
+                if (filter === 'pending' && !isPending) return;
+
+                let worldName = String(row['World Name']).trim();
+                let catColor = String(row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
+                
+                locHtml += `
+                <tr>
+                    <td><strong>${worldName}</strong></td>
+                    <td><span style="font-size: 11px; color:${catColor}; font-weight: bold;">${row['Category'] || "-"}</span></td>
+                    <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
+                    <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
+                    <td>${getBadgeHTML(row['Sketches'], row['Sketches Date'])}</td>
+                    <td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'])}</td>
+                    <td>${getBadgeHTML(row['3D Scaling'], row['3D Scaling Date'])}</td>
+                    <td>${getBadgeHTML(row['3D Details'], row['3D Details Date'])}</td>
+                    <td>${getBadgeHTML(row['Final Status'], row['Final Status Date'], true)}</td>
+                </tr>`;
+            });
+            document.getElementById('locationsTableBody').innerHTML = locHtml || "<tr><td colspan='9'>No locations match your filter.</td></tr>";
+        }
+
+        function renderAssetsTable() {
+            let filter = window.currentAssetFilter;
+            let assetsHtml = "";
+
+            window.globalAssetsData.forEach(row => {
+                let status = String(row['3D Asset Ready'] || "").toLowerCase();
+                let isDone = status === 'done' || status === 'approved' || status === 'ready' || status === 'cleared';
+                let isWip = status === 'wip' || status === 'progress' || status === 'in progress';
+                let isRew = status === 'rework' || status === 'feedback';
+                let isPending = !isDone && !isWip && !isRew;
+
+                if (filter === 'done' && !isDone) return;
+                if (filter === 'wip' && !isWip) return;
+                if (filter === 'rework' && !isRew) return;
+                if (filter === 'pending' && !isPending) return;
+
+                assetsHtml += `
+                <tr>
+                    <td><strong>${row['Asset Name']}</strong></td>
+                    <td><span style="font-size: 11px; color:#666; font-weight: bold;">${row['Category'] || "-"}</span></td>
+                    <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
+                    <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
+                    <td>${getBadgeHTML(row['Sketches'], row['Sketches Date'])}</td>
+                    <td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'])}</td>
+                    <td>${getBadgeHTML(row['3D Outsourced'], row['3D Outsourced Date'])}</td>
+                    <td>${getBadgeHTML(row['3D Asset Ready'], row['3D Asset Ready Date'], true)}</td>
+                    <td>${getBadgeHTML(row['Casting'], row['Casting Date'])}</td>
+                </tr>`;
+            });
+            document.getElementById('assetsTableBody').innerHTML = assetsHtml || "<tr><td colspan='9'>No assets match your filter.</td></tr>";
         }
 
         function renderScenesTable() {
@@ -557,14 +651,11 @@
                 let scNum = s.sceneRow['Scene Number'] || s.sceneRow['Scene Number '];
                 let expandBtn = s.shots.length > 0 ? `<button class="expand-btn" onclick="event.stopPropagation(); toggleShots('${s.sceneId}')">View ${s.shots.length} Shots ▼</button>` : '';
 
-                let locPills = s.locationNames.split(", ").map(l => l !== "-" ? `<span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; display:inline-block; margin:2px 2px 0 0;">${l}</span>` : "-").join("");
-
                 scenesHtml += `
                 <tr class="parent-row" onclick="toggleShots('${s.sceneId}')">
                     <td><strong>Scene - ${scNum}: ${s.sceneRow['Scene Name'] || ""}</strong> ${expandBtn}</td>
                     <td class="desc-col">${s.sceneRow['Scene Description'] || "-"}</td>
                     <td><strong>${s.sceneRow['Scene Duration'] || "-"}</strong></td>
-                    <td class="loc-col">${locPills}</td>
                     <td class="col-overall-status">${getBadgeHTML(s.sceneRow['scene Status'] || s.sceneRow['Scene Status'], null, false, true)}</td>
                     <td>${getBadgeHTML(s.sceneRow['Storyboard'], s.sceneRow['Storyboard Date'])}</td>
                     <td>${getBadgeHTML(s.sceneRow['World'], s.sceneRow['World Date'])}</td>
@@ -582,7 +673,6 @@
                         <td class="shot-indent">Shot ${shNum}</td>
                         <td class="desc-col" style="color:#adb5bd;">${shot['Scene Description'] || "-"}</td>
                         <td style="color:#adb5bd;">${shot['Scene Duration'] || "-"}</td>
-                        <td style="color:#adb5bd;">-</td>
                         <td class="col-overall-status" style="color:#adb5bd;">-</td>
                         <td><span style="color:#adb5bd;">-</span></td>
                         <td><span style="color:#adb5bd;">-</span></td>
@@ -595,10 +685,13 @@
                 });
             });
             
-            if (scenesHtml === "") scenesHtml = "<tr><td colspan='12'>No data found. Ensure your Master Funnel CSV has correct column names.</td></tr>";
+            if (scenesHtml === "") scenesHtml = "<tr><td colspan='11'>No data found. Ensure your Master Funnel CSV has correct column names.</td></tr>";
             document.getElementById('tableBody').innerHTML = scenesHtml;
         }
 
+        // ==========================================
+        // 🔴 TEAM TRACKER: DEPARTMENT GROUPING ENGINE
+        // ==========================================
         function processTeamData2D(rawData) {
             let members = {};
             if (!rawData || rawData.length < 2) {
@@ -848,8 +941,10 @@
 
                 processTeamData2D(teamData);
 
-                globalPieCounts = { approved: 0, wip: 0, rework: 0, notstarted: 0 };
+                window.globalLocationsData = [];
+                window.globalAssetsData = [];
                 window.globalScenesArray = [];
+                globalPieCounts = { approved: 0, wip: 0, rework: 0, notstarted: 0 };
 
                 let startDate = new Date(PROJECT_START);
                 let compStartDate = new Date(COMP_START);
@@ -873,15 +968,16 @@
                     document.getElementById('timeline-text').innerText = `Production officially begins March 3rd!`;
                 }
 
+                // PROCESS LOCATIONS 
                 let locStatsTracker = { done: 0, wip: 0, rew: 0 };
-                let totalLocations = 0; let sceneWorldMap = {}; let sceneLocationNames = {}; 
-                let locHtml = "";
+                let totalLocations = 0; 
+                let sceneWorldMap = {}; 
 
                 locationsData.forEach(row => {
                     if(!row['World Name']) return;
-                    let worldName = String(row['World Name']).trim();
-                    totalLocations++;
+                    window.globalLocationsData.push(row); // Save for filter rendering
                     
+                    totalLocations++;
                     let status = String(row['Final Status'] || "").toLowerCase();
                     let isDone = status === 'done' || status === 'approved' || status === 'ready' || status === 'cleared';
                     let isWip = status === 'wip' || status === 'progress' || status === 'in progress';
@@ -893,20 +989,6 @@
                     
                     updatePieChart(row['AI Asset']);
 
-                    let catColor = String(row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
-                    locHtml += `
-                    <tr>
-                        <td><strong>${worldName}</strong></td>
-                        <td><span style="font-size: 11px; color:${catColor}; font-weight: bold;">${row['Category'] || "-"}</span></td>
-                        <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
-                        <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
-                        <td>${getBadgeHTML(row['Sketches'], row['Sketches Date'])}</td>
-                        <td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'])}</td>
-                        <td>${getBadgeHTML(row['3D Scaling'], row['3D Scaling Date'])}</td>
-                        <td>${getBadgeHTML(row['3D Details'], row['3D Details Date'])}</td>
-                        <td>${getBadgeHTML(row['Final Status'], row['Final Status Date'], true)}</td>
-                    </tr>`;
-
                     let linkedStr = String(row['Linked Scenes'] || "");
                     let linkedScenes = linkedStr.match(/\d+/g) || [];
                     linkedScenes.forEach(scNum => {
@@ -916,34 +998,19 @@
                         if (isDone) sceneWorldMap[scId].done++;
                         else if (isWip) sceneWorldMap[scId].wip++;
                         else if (isRew) sceneWorldMap[scId].rew++;
-
-                        if (!sceneLocationNames[scId]) sceneLocationNames[scId] = [];
-                        if (!sceneLocationNames[scId].includes(worldName)) {
-                            sceneLocationNames[scId].push(worldName);
-                        }
                     });
                 });
-                document.getElementById('locationsTableBody').innerHTML = locHtml || "<tr><td colspan='9'>No data found in Locations tab.</td></tr>";
+                renderLocationsTable(); // Render using the new filter function
 
-                let assetsHtml = "";
+                // PROCESS ASSETS
                 assetsData.forEach(row => {
                     if(!row['Asset Name']) return;
+                    window.globalAssetsData.push(row); // Save for filter rendering
                     updatePieChart(row['AI Asset']);
-                    assetsHtml += `
-                    <tr>
-                        <td><strong>${row['Asset Name']}</strong></td>
-                        <td><span style="font-size: 11px; color:#666; font-weight: bold;">${row['Category'] || "-"}</span></td>
-                        <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
-                        <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
-                        <td>${getBadgeHTML(row['Sketches'], row['Sketches Date'])}</td>
-                        <td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'])}</td>
-                        <td>${getBadgeHTML(row['3D Outsourced'], row['3D Outsourced Date'])}</td>
-                        <td>${getBadgeHTML(row['3D Asset Ready'], row['3D Asset Ready Date'], true)}</td>
-                        <td>${getBadgeHTML(row['Casting'], row['Casting Date'])}</td>
-                    </tr>`;
                 });
-                document.getElementById('assetsTableBody').innerHTML = assetsHtml || "<tr><td colspan='9'>No data found in Assets tab.</td></tr>";
+                renderAssetsTable(); // Render using the new filter function
 
+                // PROCESS SCENES
                 let scenesMap = {}; let currentSceneId = null;
                 let counts = {
                     sb: { done: 0, wip: 0 }, 
@@ -1023,9 +1090,6 @@
                 Object.keys(scenesMap).forEach(sceneId => {
                     let s = scenesMap[sceneId];
                     if(!s.sceneRow) return;
-
-                    let scNumInt = parseInt(s.sceneRow['Scene Number'] || "0", 10);
-                    s.locationNames = sceneLocationNames[scNumInt] ? sceneLocationNames[scNumInt].join(", ") : "-";
 
                     let sceneDurMins = parseDurationToMinutes(String(s.sceneRow['Scene Duration'] || "0"));
 
@@ -1136,6 +1200,7 @@
                     rc: Math.round(activeRcShots * compProgress) 
                 };
 
+                // --- ROW 1 UI CARDS ---
                 document.getElementById('card-sb').innerText = `${counts.sb.done} / ${finalTotalScenes}`;
                 document.getElementById('mini-sb').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.sb.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.sb.wip}</span>`;
 
@@ -1151,6 +1216,7 @@
                 document.getElementById('card-st-dur').innerText = formatDuration(dur.st.done);
                 document.getElementById('mini-st-dur').innerHTML = `<span class="stat-pill pill-appr">✔ ${formatDuration(dur.st.done)}</span> <span class="stat-pill pill-wip">⏳ ${formatDuration(dur.st.wip)}</span> <span class="stat-pill pill-rew">↻ ${formatDuration(dur.st.rew)}</span>`;
 
+                // --- ROW 2 UI CARDS ---
                 document.getElementById('card-mo-sc').innerText = `${counts.mo_sc.done} / ${finalTotalScenes}`;
                 document.getElementById('mini-mo-sc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.mo_sc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.mo_sc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.mo_sc.rew}</span>`;
 
