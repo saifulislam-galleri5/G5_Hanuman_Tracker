@@ -12,6 +12,7 @@
         .progress-container { width: 100%; background-color: #e9ecef; border-radius: 12px; margin-bottom: 25px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); height: 24px; overflow: hidden;}
         .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #AEC6CF, #77DD77); text-align: center; line-height: 24px; color: white; font-weight: bold; font-size: 12px; transition: width 0.8s ease-in-out; }
         
+        /* 10 Cards in a 5-column layout */
         .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 25px; }
         .card { background: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #AEC6CF; transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between;}
         .card:hover { transform: translateY(-3px); }
@@ -19,6 +20,7 @@
         .card .number { font-size: 22px; font-weight: bold; color: #2c3e50; margin: 5px 0;}
         .card .target { font-size: 11px; color: #888; font-weight: bold; margin-bottom: 8px;}
         
+        /* Highlighted Cards CSS */
         .card-highlight-st { background-color: #fffff4; border: 2px solid #e5e500; box-shadow: 0 4px 12px rgba(229, 229, 0, 0.2) !important; border-top-width: 4px; border-top-color: #e5e500; }
         .card-highlight-mo { background-color: #f0f8ff; border: 2px solid #5fa8d3; box-shadow: 0 4px 12px rgba(95, 168, 211, 0.2) !important; border-top-width: 4px; border-top-color: #5fa8d3; }
 
@@ -444,7 +446,6 @@
         const locationsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340&nocache=${ts}`; 
         const teamCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=162642321&nocache=${ts}`; 
 
-        // 🟢 HELPER: CHECKS IF A TARGET DATE FALLS WITHIN THE NEXT 7 DAYS OR IS OVERDUE
         function isDateThisWeekOrOverdue(dateStr, status) {
             if (!dateStr) return false;
             let lower = String(status || "").trim().toLowerCase();
@@ -460,7 +461,6 @@
             let nextWeek = new Date(today);
             nextWeek.setDate(today.getDate() + 7);
             
-            // True if the date is less than or equal to 7 days from now (captures overdues as well)
             return targetDate.getTime() <= nextWeek.getTime();
         }
 
@@ -677,7 +677,6 @@
                 return true;
             });
 
-            // "Needs to be delivered this week" sorting
             if (sortMode === 'this_week') {
                 filteredArray.sort((a, b) => {
                     if (a.isDueThisWeek && !b.isDueThisWeek) return -1;
@@ -692,8 +691,6 @@
             filteredArray.forEach(row => {
                 let worldName = String(row['World Name']).trim();
                 let catColor = String(row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
-                
-                // Optional: Add a visual indicator if it's urgent
                 let urgentAlert = row.isDueThisWeek && sortMode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
 
                 locHtml += `
@@ -731,7 +728,6 @@
                 return true;
             });
 
-            // "Needs to be delivered this week" sorting
             if (sortMode === 'this_week') {
                 filteredArray.sort((a, b) => {
                     if (a.isDueThisWeek && !b.isDueThisWeek) return -1;
@@ -1022,7 +1018,7 @@
 
                     if (allTasks.length > 0) {
                         let historyHtml = `<tr class="shot-row ${m.safeId}"><td colspan="5" style="padding: 15px 25px; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">`;
-                        historyHtml += `<h4 style="margin:0 0 10px 0; color:#475569; font-size: 13px;">Complete Timeline for ${m.name}</h4>`;
+                        historyHtml += `<h4 style="margin:0 0 10px 0; color:#475569; font-size:13px;">Complete Timeline for ${m.name}</h4>`;
                         historyHtml += `<table style="background:white; width:100%; border:1px solid #cbd5e1; border-radius:6px; border-collapse: collapse; min-width: 100%;">
                                             <tr style="background:#f1f5f9;">
                                                 <th style="width:120px; padding:6px 10px; font-size:11px; text-align:left; border-bottom: 1px solid #cbd5e1;">Date</th>
@@ -1120,7 +1116,6 @@
                     if(!row['World Name']) return;
                     
                     row.originalOrder = idx;
-                    // Tag if it needs to be delivered within 7 days
                     row.isDueThisWeek = isDateThisWeekOrOverdue(row['Final Status Date'], row['Final Status']);
 
                     window.globalLocationsData.push(row); 
@@ -1155,7 +1150,6 @@
                     if(!row['Asset Name']) return;
                     
                     row.originalOrder = idx;
-                    // Tag if it needs to be delivered within 7 days
                     let isReadyDue = isDateThisWeekOrOverdue(row['3D Asset Ready Date'], row['3D Asset Ready']);
                     let isCastDue = isDateThisWeekOrOverdue(row['Casting Date'], row['Casting']);
                     row.isDueThisWeek = isReadyDue || isCastDue;
@@ -1213,7 +1207,7 @@
                         
                         let mcStat = String(row['MoCap']||'').toLowerCase();
                         if (mcStat === 'done' || mcStat === 'approved' || mcStat === 'ready') counts.mc.done++;
-                        else if (mcStat === 'not required' || mcStat === 'n/a' || mcStat === 'na') { counts.mc.done++; counts.mc.notReq++; }
+                        else if (mcStat === 'not required' || mcStat === 'n/a' || mcStat === 'na') { counts.mc.notReq++; }
                         else if (mcStat === 'wip' || mcStat === 'progress') counts.mc.wip++;
                         else if (mcStat === 'rework' || mcStat === 'feedback') counts.mc.rew++;
 
@@ -1235,7 +1229,7 @@
                         else if(mLow === 'rework' || mLow === 'feedback') counts.mo.rew++;
 
                         if(rLow === 'done' || rLow === 'approved') counts.rc.done++;
-                        else if(rLow === 'not required' || rLow === 'n/a' || rLow === 'na') { counts.rc.done++; counts.rc.notReq++; }
+                        else if(rLow === 'not required' || rLow === 'n/a' || rLow === 'na') { counts.rc.notReq++; }
                         else if(rLow === 'wip' || rLow === 'in progress') counts.rc.wip++;
                         else if(rLow === 'rework' || rLow === 'feedback') counts.rc.rew++;
                     }
@@ -1249,10 +1243,31 @@
 
                     let sceneDurSecs = parseDurationToSeconds(String(s.sceneRow['Scene Duration'] || "0"));
 
-                    let stDoneShots = 0, stWipShots = 0, stRewShots = 0;
-                    let moDoneShots = 0, moWipShots = 0, moRewShots = 0;
-                    let rcDoneShots = 0;
-                    let assetsDoneShots = 0;
+                    // 🟢 NEW INDEPENDENT SCENE LEVEL DURATION TRACKING
+                    let stScLow = String(s.sceneRow['Statics'] || "").toLowerCase();
+                    if(stScLow === 'done' || stScLow === 'approved' || stScLow === 'ready' || stScLow === 'cleared') { 
+                        counts.st_sc.done++; dur.st.done += sceneDurSecs; 
+                    }
+                    else if(stScLow === 'wip' || stScLow === 'progress' || stScLow === 'in progress') { 
+                        counts.st_sc.wip++; dur.st.wip += sceneDurSecs; 
+                    }
+                    else if(stScLow === 'rework' || stScLow === 'feedback') { 
+                        counts.st_sc.rew++; dur.st.rew += sceneDurSecs; 
+                    }
+
+                    let moScLow = String(s.sceneRow['Motion'] || "").toLowerCase();
+                    if(moScLow === 'done' || moScLow === 'approved' || moScLow === 'ready' || moScLow === 'cleared') { 
+                        counts.mo_sc.done++; dur.mo.done += sceneDurSecs; 
+                    }
+                    else if(moScLow === 'wip' || moScLow === 'progress' || moScLow === 'in progress') { 
+                        counts.mo_sc.wip++; dur.mo.wip += sceneDurSecs; 
+                    }
+                    else if(moScLow === 'rework' || moScLow === 'feedback') { 
+                        counts.mo_sc.rew++; dur.mo.rew += sceneDurSecs; 
+                    }
+
+                    // 🟢 SHOT PROCESSING FOR PROGRESS SCORING
+                    let stDoneShots = 0, moDoneShots = 0, rcDoneShots = 0, assetsDoneShots = 0;
                     let maxRcDateTs = 0;
                     let validDateFound = false;
 
@@ -1263,14 +1278,8 @@
                             let rc = String(shot['Recompositing'] || "").toLowerCase();
                             let as = String(shot['3D Assets'] || "").toLowerCase();
                             
-                            if (st === 'done' || st === 'approved') stDoneShots++;
-                            else if (st === 'wip' || st === 'progress' || st === 'in progress') stWipShots++;
-                            else if (st === 'rework' || st === 'feedback') stRewShots++;
-
-                            if (mo === 'done' || mo === 'approved') moDoneShots++;
-                            else if (mo === 'wip' || mo === 'progress' || mo === 'in progress') moWipShots++;
-                            else if (mo === 'rework' || mo === 'feedback') moRewShots++;
-
+                            if (st === 'done' || st === 'approved' || st === 'ready' || st === 'cleared') stDoneShots++;
+                            if (mo === 'done' || mo === 'approved' || mo === 'ready' || mo === 'cleared') moDoneShots++;
                             if (rc === 'done' || rc === 'approved' || rc === 'not required' || rc === 'n/a' || rc === 'na') rcDoneShots++;
                             if (as === 'done' || as === 'approved' || as === 'ready' || as === 'cleared') assetsDoneShots++;
 
@@ -1283,39 +1292,6 @@
                                 }
                             }
                         });
-                        
-                        if (stRewShots > 0) {
-                            counts.st_sc.rew++;
-                            dur.st.rew += sceneDurSecs;
-                        } else if (stDoneShots === s.shots.length) {
-                            counts.st_sc.done++;
-                            dur.st.done += sceneDurSecs;
-                        } else if (stDoneShots > 0 || stWipShots > 0) {
-                            counts.st_sc.wip++;
-                            dur.st.wip += sceneDurSecs;
-                        }
-
-                        if (moRewShots > 0) {
-                            counts.mo_sc.rew++;
-                            dur.mo.rew += sceneDurSecs;
-                        } else if (moDoneShots === s.shots.length) {
-                            counts.mo_sc.done++;
-                            dur.mo.done += sceneDurSecs;
-                        } else if (moDoneShots > 0 || moWipShots > 0) {
-                            counts.mo_sc.wip++;
-                            dur.mo.wip += sceneDurSecs;
-                        }
-
-                    } else {
-                        let stLow = String(s.sceneRow['Statics'] || "").toLowerCase();
-                        if(stLow === 'done' || stLow === 'approved') { counts.st_sc.done++; dur.st.done += sceneDurSecs; }
-                        else if(stLow === 'wip' || stLow === 'in progress') { counts.st_sc.wip++; dur.st.wip += sceneDurSecs; }
-                        else if(stLow === 'rework' || stLow === 'feedback') { counts.st_sc.rew++; dur.st.rew += sceneDurSecs; }
-
-                        let moLow = String(s.sceneRow['Motion'] || "").toLowerCase();
-                        if(moLow === 'done' || moLow === 'approved') { counts.mo_sc.done++; dur.mo.done += sceneDurSecs; }
-                        else if(moLow === 'wip' || moLow === 'in progress') { counts.mo_sc.wip++; dur.mo.wip += sceneDurSecs; }
-                        else if(moLow === 'rework' || moLow === 'feedback') { counts.mo_sc.rew++; dur.mo.rew += sceneDurSecs; }
                     }
 
                     if(!validDateFound && s.sceneRow['Recompositing Date']) {
