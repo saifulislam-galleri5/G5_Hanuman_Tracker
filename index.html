@@ -12,7 +12,6 @@
         .progress-container { width: 100%; background-color: #e9ecef; border-radius: 12px; margin-bottom: 25px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); height: 24px; overflow: hidden;}
         .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #AEC6CF, #77DD77); text-align: center; line-height: 24px; color: white; font-weight: bold; font-size: 12px; transition: width 0.8s ease-in-out; }
         
-        /* 10 Cards in a 5-column layout */
         .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 25px; }
         .card { background: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #AEC6CF; transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between;}
         .card:hover { transform: translateY(-3px); }
@@ -20,7 +19,6 @@
         .card .number { font-size: 22px; font-weight: bold; color: #2c3e50; margin: 5px 0;}
         .card .target { font-size: 11px; color: #888; font-weight: bold; margin-bottom: 8px;}
         
-        /* Highlighted Cards CSS */
         .card-highlight-st { background-color: #fffff4; border: 2px solid #e5e500; box-shadow: 0 4px 12px rgba(229, 229, 0, 0.2) !important; border-top-width: 4px; border-top-color: #e5e500; }
         .card-highlight-mo { background-color: #f0f8ff; border: 2px solid #5fa8d3; box-shadow: 0 4px 12px rgba(95, 168, 211, 0.2) !important; border-top-width: 4px; border-top-color: #5fa8d3; }
 
@@ -209,7 +207,8 @@
                     <th style="width: 180px;">Scene / Shot</th>
                     <th style="width: 220px;">Description</th>
                     <th style="width: 70px;">Duration</th>
-                    <th style="width: 150px;">Location(s)</th> <th class="col-overall-status">Scene Status</th>
+                    <th style="width: 150px;">Location(s)</th>
+                    <th class="col-overall-status">Scene Status</th>
                     <th>Storyboard</th>
                     <th>World (Env)</th>
                     <th>Statics</th>
@@ -291,7 +290,6 @@
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
         
-        // Duration Helper Functions
         function parseDurationToMinutes(val) {
             if(!val) return 0;
             let str = String(val).toLowerCase().trim();
@@ -519,23 +517,28 @@
             window.assetChart.update();
         }
 
+        // UPDATED FETCH: Catches exact page rejection so Master Funnel doesn't crash if 1 link is broken
         function fetchCSV(url, useHeader = true) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 Papa.parse(url, { 
                     download: true, 
-                    header: useHeader, 
+                    header: useHeader,
+                    skipEmptyLines: true,
                     complete: results => {
                         if (results.data && results.data.length > 0) {
                             let testCell = String(useHeader ? Object.keys(results.data[0])[0] : results.data[0][0]);
-                            if (testCell.includes("<!DOCTYPE") || testCell.includes("_bootstrap")) {
-                                console.error("ERROR: Received a Webpage instead of a CSV.");
+                            if (testCell.includes("<!DOCTYPE") || testCell.includes("_bootstrap") || testCell.includes("<html")) {
+                                console.warn("Notice: A Google Sheets URL returned a webpage instead of CSV. Ensure it is fully Published to Web.");
                                 resolve([]); 
                                 return;
                             }
                         }
-                        resolve(results.data);
+                        resolve(results.data || []);
                     }, 
-                    error: err => reject(err) 
+                    error: err => {
+                        console.warn("Fetch Notice: Could not load one of the CSV links. Continuing with blank data for that module.", err);
+                        resolve([]); 
+                    }
                 });
             });
         }
@@ -591,13 +594,15 @@
                     </tr>`;
                 });
             });
-            document.getElementById('tableBody').innerHTML = scenesHtml || "<tr><td colspan='12'>No data found.</td></tr>";
+            
+            if (scenesHtml === "") scenesHtml = "<tr><td colspan='12'>No data found. Ensure your Master Funnel CSV has correct column names.</td></tr>";
+            document.getElementById('tableBody').innerHTML = scenesHtml;
         }
 
         function processTeamData2D(rawData) {
             let members = {};
             if (!rawData || rawData.length < 2) {
-                document.getElementById('teamTableBody').innerHTML = "<div style='padding:20px; text-align:center; color:#888; background:white; border-radius:8px;'>No valid team data found. Check your CSV link format.</div>";
+                document.getElementById('teamTableBody').innerHTML = "<div style='padding:20px; text-align:center; color:#888; background:white; border-radius:8px;'>No valid team data found. Check your Google Sheet publication settings.</div>";
                 return;
             }
 
@@ -868,20 +873,16 @@
                     document.getElementById('timeline-text').innerText = `Production officially begins March 3rd!`;
                 }
 
-                // 🟢 1. EXTRACT LOCATION MAPPING
                 let locStatsTracker = { done: 0, wip: 0, rew: 0 };
-                let totalLocations = 0; 
-                let sceneWorldMap = {}; 
-                let sceneLocationNames = {}; // NEW: Store actual names for the Funnel
-                
+                let totalLocations = 0; let sceneWorldMap = {}; let sceneLocationNames = {}; 
                 let locHtml = "";
 
                 locationsData.forEach(row => {
                     if(!row['World Name']) return;
-                    let worldName = row['World Name'].trim();
+                    let worldName = String(row['World Name']).trim();
                     totalLocations++;
                     
-                    let status = (row['Final Status'] || "").toLowerCase();
+                    let status = String(row['Final Status'] || "").toLowerCase();
                     let isDone = status === 'done' || status === 'approved' || status === 'ready' || status === 'cleared';
                     let isWip = status === 'wip' || status === 'progress' || status === 'in progress';
                     let isRew = status === 'rework' || status === 'feedback';
@@ -892,7 +893,7 @@
                     
                     updatePieChart(row['AI Asset']);
 
-                    let catColor = (row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
+                    let catColor = String(row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
                     locHtml += `
                     <tr>
                         <td><strong>${worldName}</strong></td>
@@ -906,7 +907,7 @@
                         <td>${getBadgeHTML(row['Final Status'], row['Final Status Date'], true)}</td>
                     </tr>`;
 
-                    let linkedStr = row['Linked Scenes'] || "";
+                    let linkedStr = String(row['Linked Scenes'] || "");
                     let linkedScenes = linkedStr.match(/\d+/g) || [];
                     linkedScenes.forEach(scNum => {
                         let scId = parseInt(scNum, 10);
@@ -916,7 +917,6 @@
                         else if (isWip) sceneWorldMap[scId].wip++;
                         else if (isRew) sceneWorldMap[scId].rew++;
 
-                        // Store world name for funnel display
                         if (!sceneLocationNames[scId]) sceneLocationNames[scId] = [];
                         if (!sceneLocationNames[scId].includes(worldName)) {
                             sceneLocationNames[scId].push(worldName);
@@ -960,8 +960,8 @@
                 let totalScenes = 0, totalShots = 0;
 
                 scenesData.forEach(row => {
-                    let scNum = (row['Scene Number'] || row['Scene Number '] || "").trim();
-                    let shNum = (row['Shot Number'] || row['Shot Number '] || "").trim();
+                    let scNum = String(row['Scene Number'] || row['Scene Number '] || "").trim();
+                    let shNum = String(row['Shot Number'] || row['Shot Number '] || "").trim();
                     if (!scNum) return;
 
                     currentSceneId = 'scene_' + scNum.replace(/[^a-zA-Z0-9]/g, '');
@@ -979,16 +979,16 @@
                         scenesMap[currentSceneId].sceneRow = row;
                         totalScenes++;
                         
-                        let scStat = (row['scene Status'] || row['Scene Status'] || "").toLowerCase();
+                        let scStat = String(row['scene Status'] || row['Scene Status'] || "").toLowerCase();
                         if(scStat === 'locked') counts.sc.done++;
                         if(scStat === 'in prod') counts.sc.wip++;
                         if(scStat === 'in prep') counts.sc.rew++;
                         
-                        let sbStat = (row['Storyboard']||'').toLowerCase();
+                        let sbStat = String(row['Storyboard']||'').toLowerCase();
                         if(sbStat === 'done') counts.sb.done++;
                         else if(sbStat === 'wip' || sbStat === 'progress') counts.sb.wip++;
                         
-                        let mcStat = (row['MoCap']||'').toLowerCase();
+                        let mcStat = String(row['MoCap']||'').toLowerCase();
                         if (mcStat === 'done' || mcStat === 'approved' || mcStat === 'ready') counts.mc.done++;
                         else if (mcStat === 'not required' || mcStat === 'n/a' || mcStat === 'na') { counts.mc.done++; counts.mc.notReq++; }
                         else if (mcStat === 'wip' || mcStat === 'progress') counts.mc.wip++;
@@ -999,9 +999,9 @@
                         scenesMap[currentSceneId].shots.push(row);
                         totalShots++;
 
-                        let sLow = (row['Statics'] || "").toLowerCase();
-                        let mLow = (row['Motion'] || "").toLowerCase(); 
-                        let rLow = (row['Recompositing'] || "").toLowerCase();
+                        let sLow = String(row['Statics'] || "").toLowerCase();
+                        let mLow = String(row['Motion'] || "").toLowerCase(); 
+                        let rLow = String(row['Recompositing'] || "").toLowerCase();
 
                         if(sLow === 'done' || sLow === 'approved') counts.st.done++;
                         else if(sLow === 'wip' || sLow === 'in progress') counts.st.wip++;
@@ -1027,7 +1027,7 @@
                     let scNumInt = parseInt(s.sceneRow['Scene Number'] || "0", 10);
                     s.locationNames = sceneLocationNames[scNumInt] ? sceneLocationNames[scNumInt].join(", ") : "-";
 
-                    let sceneDurMins = parseDurationToMinutes(s.sceneRow['Scene Duration']);
+                    let sceneDurMins = parseDurationToMinutes(String(s.sceneRow['Scene Duration'] || "0"));
 
                     let stDoneShots = 0, stWipShots = 0, stRewShots = 0;
                     let moDoneShots = 0, moWipShots = 0, moRewShots = 0;
@@ -1038,10 +1038,10 @@
 
                     if(s.shots.length > 0) {
                         s.shots.forEach(shot => {
-                            let st = (shot['Statics'] || "").toLowerCase();
-                            let mo = (shot['Motion'] || "").toLowerCase();
-                            let rc = (shot['Recompositing'] || "").toLowerCase();
-                            let as = (shot['3D Assets'] || "").toLowerCase();
+                            let st = String(shot['Statics'] || "").toLowerCase();
+                            let mo = String(shot['Motion'] || "").toLowerCase();
+                            let rc = String(shot['Recompositing'] || "").toLowerCase();
+                            let as = String(shot['3D Assets'] || "").toLowerCase();
                             
                             if (st === 'done' || st === 'approved') stDoneShots++;
                             else if (st === 'wip' || st === 'progress' || st === 'in progress') stWipShots++;
@@ -1087,12 +1087,12 @@
                         }
 
                     } else {
-                        let stLow = (s.sceneRow['Statics'] || "").toLowerCase();
+                        let stLow = String(s.sceneRow['Statics'] || "").toLowerCase();
                         if(stLow === 'done' || stLow === 'approved') { counts.st_sc.done++; dur.st.done += sceneDurMins; }
                         else if(stLow === 'wip' || stLow === 'in progress') { counts.st_sc.wip++; dur.st.wip += sceneDurMins; }
                         else if(stLow === 'rework' || stLow === 'feedback') { counts.st_sc.rew++; dur.st.rew += sceneDurMins; }
 
-                        let moLow = (s.sceneRow['Motion'] || "").toLowerCase();
+                        let moLow = String(s.sceneRow['Motion'] || "").toLowerCase();
                         if(moLow === 'done' || moLow === 'approved') { counts.mo_sc.done++; dur.mo.done += sceneDurMins; }
                         else if(moLow === 'wip' || moLow === 'in progress') { counts.mo_sc.wip++; dur.mo.wip += sceneDurMins; }
                         else if(moLow === 'rework' || moLow === 'feedback') { counts.mo_sc.rew++; dur.mo.rew += sceneDurMins; }
@@ -1104,9 +1104,9 @@
                     }
 
                     let totalS = s.shots.length || 1;
-                    let sbDone = (s.sceneRow['Storyboard']||'').toLowerCase() === 'done';
-                    let mcDone = (s.sceneRow['MoCap']||'').toLowerCase() === 'done' || (s.sceneRow['MoCap']||'').toLowerCase() === 'not required';
-                    let wdDone = (s.sceneRow['World']||'').toLowerCase() === 'done';
+                    let sbDone = String(s.sceneRow['Storyboard']||'').toLowerCase() === 'done';
+                    let mcDone = String(s.sceneRow['MoCap']||'').toLowerCase() === 'done' || String(s.sceneRow['MoCap']||'').toLowerCase() === 'not required';
+                    let wdDone = String(s.sceneRow['World']||'').toLowerCase() === 'done';
 
                     s.completionTs = validDateFound ? maxRcDateTs : Infinity;
                     s.readinessScore = (sbDone ? 30 : 0) + (wdDone ? 30 : 0) + ((assetsDoneShots/totalS) * 40);
@@ -1136,7 +1136,6 @@
                     rc: Math.round(activeRcShots * compProgress) 
                 };
 
-                // --- ROW 1 UI CARDS ---
                 document.getElementById('card-sb').innerText = `${counts.sb.done} / ${finalTotalScenes}`;
                 document.getElementById('mini-sb').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.sb.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.sb.wip}</span>`;
 
@@ -1152,7 +1151,6 @@
                 document.getElementById('card-st-dur').innerText = formatDuration(dur.st.done);
                 document.getElementById('mini-st-dur').innerHTML = `<span class="stat-pill pill-appr">✔ ${formatDuration(dur.st.done)}</span> <span class="stat-pill pill-wip">⏳ ${formatDuration(dur.st.wip)}</span> <span class="stat-pill pill-rew">↻ ${formatDuration(dur.st.rew)}</span>`;
 
-                // --- ROW 2 UI CARDS ---
                 document.getElementById('card-mo-sc').innerText = `${counts.mo_sc.done} / ${finalTotalScenes}`;
                 document.getElementById('mini-mo-sc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.mo_sc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.mo_sc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.mo_sc.rew}</span>`;
 
@@ -1174,7 +1172,6 @@
 
             } catch (error) {
                 console.error("Error building dashboard:", error);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan='12' style='color:red;text-align:center;'>Error loading data: Ensure all Google Sheets links are valid CSV exports.</td></tr>`;
             }
         }
 
