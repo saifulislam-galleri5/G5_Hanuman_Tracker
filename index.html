@@ -12,7 +12,6 @@
         .progress-container { width: 100%; background-color: #e9ecef; border-radius: 12px; margin-bottom: 25px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); height: 24px; overflow: hidden;}
         .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #AEC6CF, #77DD77); text-align: center; line-height: 24px; color: white; font-weight: bold; font-size: 12px; transition: width 0.8s ease-in-out; }
         
-        /* 10 Cards in a 5-column layout */
         .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 25px; }
         .card { background: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #AEC6CF; transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between;}
         .card:hover { transform: translateY(-3px); }
@@ -20,7 +19,6 @@
         .card .number { font-size: 22px; font-weight: bold; color: #2c3e50; margin: 5px 0;}
         .card .target { font-size: 11px; color: #888; font-weight: bold; margin-bottom: 8px;}
         
-        /* Highlighted Cards CSS */
         .card-highlight-st { background-color: #fffff4; border: 2px solid #e5e500; box-shadow: 0 4px 12px rgba(229, 229, 0, 0.2) !important; border-top-width: 4px; border-top-color: #e5e500; }
         .card-highlight-mo { background-color: #f0f8ff; border: 2px solid #5fa8d3; box-shadow: 0 4px 12px rgba(95, 168, 211, 0.2) !important; border-top-width: 4px; border-top-color: #5fa8d3; }
 
@@ -53,6 +51,7 @@
         tr.parent-row:hover { background-color: #f1f5f9; cursor: pointer;}
         
         .desc-col { text-align: left !important; font-size: 11px; max-width: 200px; line-height: 1.4; color: #475569; }
+        .loc-col { text-align: left !important; font-size: 11px; font-weight: 600; color: #1e3a8a; }
         
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 70px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
         .status-done { background-color: #C1E1C1; color: #2E5C2E; } 
@@ -197,11 +196,12 @@
                 <h3 style="margin: 0; color: #e65100; font-size: 18px;">🔥 Smart Pipeline Sorting</h3>
                 <p style="margin: 5px 0 0 0; font-size: 13px; color: #f57c00;">Change how you view the scenes to identify immediate priorities and bottlenecks.</p>
             </div>
-            <select id="funnelSortSelect" class="sort-select" onchange="applySort(this.value)">
+            <select id="funnelSortSelect" class="sort-select" onchange="applySelectStyle(this.id); renderScenesTable();">
                 <option value="default">🔢 Scene Order (Default)</option>
                 <option value="date">📅 Earliest Delivery Date First</option>
                 <option value="readiness">📦 Asset Readiness (Ready to Shoot)</option>
                 <option value="progress">🚀 Scene Progress (Deepest in Funnel)</option>
+                <option value="this_week">🚨 Needs to be delivered this week</option>
             </select>
         </div>
         
@@ -228,6 +228,16 @@
     </div>
 
     <div id="characters" class="tab-content">
+        <div class="sort-banner" style="padding: 10px 15px; margin-bottom: 15px; background-color: #fff3e0; border-color: #ffcc80;">
+            <div>
+                <h3 style="margin: 0; color: #e65100; font-size: 16px;">🔥 Smart Urgency Sorting</h3>
+            </div>
+            <select id="assetSortSelect" class="sort-select" style="padding: 6px 12px; font-size: 13px;" onchange="applySelectStyle(this.id); renderAssetsTable();">
+                <option value="default">🔢 Asset Order (Default)</option>
+                <option value="this_week">🚨 Needs to be delivered this week</option>
+            </select>
+        </div>
+
         <table>
             <thead>
                 <tr>
@@ -274,6 +284,16 @@
     </div>
 
     <div id="locations" class="tab-content">
+        <div class="sort-banner" style="padding: 10px 15px; margin-bottom: 15px; background-color: #fff3e0; border-color: #ffcc80;">
+            <div>
+                <h3 style="margin: 0; color: #e65100; font-size: 16px;">🔥 Smart Urgency Sorting</h3>
+            </div>
+            <select id="locSortSelect" class="sort-select" style="padding: 6px 12px; font-size: 13px;" onchange="applySelectStyle(this.id); renderLocationsTable();">
+                <option value="default">🔢 Location Order (Default)</option>
+                <option value="this_week">🚨 Needs to be delivered this week</option>
+            </select>
+        </div>
+
         <table>
             <thead>
                 <tr>
@@ -340,22 +360,17 @@
         window.globalScenesArray = [];
         window.globalAssetsData = [];
         window.globalLocationsData = [];
-        window.currentSortMode = 'default'; 
 
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
         
-        // 🟢 FULLY BULLETPROOF DURATION PARSER (Always returns Seconds mathematically)
         function parseDurationToSeconds(val) {
             if(!val) return 0;
             let str = String(val).toLowerCase().trim();
-            
-            // Format "1:30" (90 seconds)
             if (str.includes(":")) {
                 let parts = str.split(":");
                 return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
             }
-            // Format "1m 30s"
             if (str.includes("m") || str.includes("s")) {
                 let mins = 0, secs = 0;
                 let mMatch = str.match(/(\d+)\s*m/);
@@ -364,17 +379,15 @@
                 if(sMatch) secs = parseInt(sMatch[1]);
                 return (mins * 60) + secs;
             }
-            // Raw numbers (e.g. "120" -> 120 seconds)
             let num = parseFloat(str.replace(/[^0-9.]/g, ''));
             return isNaN(num) ? 0 : num; 
         }
 
-        // Convert raw seconds back to "Xm Ys" for the UI
         function formatDuration(totalSecs) {
             if (totalSecs === 0) return "0s";
             let m = Math.floor(totalSecs / 60);
             let s = Math.round(totalSecs % 60);
-            if (s === 60) { m += 1; s = 0; } // Roll over if exact 60s
+            if (s === 60) { m += 1; s = 0; } 
             if (m > 0 && s > 0) return `${m}m ${s}s`;
             if (m > 0 && s === 0) return `${m}m`;
             return `${s}s`;
@@ -408,19 +421,18 @@
             }
         }
 
-        function applySort(mode) {
-            window.currentSortMode = mode;
-            let selectBox = document.getElementById('funnelSortSelect');
-            if(mode === 'default') {
-                selectBox.style.backgroundColor = "white";
-                selectBox.style.color = "#333";
-                selectBox.style.borderColor = "#ccc";
+        function applySelectStyle(selectId) {
+            let el = document.getElementById(selectId);
+            if(!el) return;
+            if (el.value === 'default') {
+                el.style.backgroundColor = "white";
+                el.style.color = "#333";
+                el.style.borderColor = "#ccc";
             } else {
-                selectBox.style.backgroundColor = "#ff9800";
-                selectBox.style.color = "white";
-                selectBox.style.borderColor = "#e65100";
+                el.style.backgroundColor = "#ff9800";
+                el.style.color = "white";
+                el.style.borderColor = "#e65100";
             }
-            renderScenesTable();
         }
 
         // ==========================================
@@ -431,6 +443,26 @@
         const assetsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=366020038&nocache=${ts}`; 
         const locationsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340&nocache=${ts}`; 
         const teamCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=162642321&nocache=${ts}`; 
+
+        // 🟢 HELPER: CHECKS IF A TARGET DATE FALLS WITHIN THE NEXT 7 DAYS OR IS OVERDUE
+        function isDateThisWeekOrOverdue(dateStr, status) {
+            if (!dateStr) return false;
+            let lower = String(status || "").trim().toLowerCase();
+            if (lower === "done" || lower === "approved" || lower === "ready" || lower === "cleared" || lower === "not required" || lower === "n/a" || lower === "na") return false;
+            
+            let dStr = String(dateStr).replace("'", " 20");
+            let targetDate = new Date(dStr);
+            if (isNaN(targetDate.getTime())) return false; 
+            
+            let today = new Date();
+            today.setHours(0,0,0,0);
+            
+            let nextWeek = new Date(today);
+            nextWeek.setDate(today.getDate() + 7);
+            
+            // True if the date is less than or equal to 7 days from now (captures overdues as well)
+            return targetDate.getTime() <= nextWeek.getTime();
+        }
 
         function isOverdue(dateStr, status) {
             if (!dateStr) return false;
@@ -494,7 +526,7 @@
                 
                 if (val === 'not required' || val === 'n/a' || val === 'na') {
                     notReq++;
-                    done++; // Mathematical trick so parent turns Green
+                    done++; 
                 } else if (val === 'done' || val === 'approved' || val === 'ready' || val === 'cleared') {
                     done++;
                 } else if (val === 'wip' || val === 'in progress' || val === 'progress') {
@@ -520,7 +552,7 @@
 
             let activeTotal = total - notReq;
 
-            if (notReq === total && total > 0) {
+            if (activeTotal === 0 && notReq > 0) {
                 return `<span class="status-badge status-na">N/A</span>`;
             }
             
@@ -529,11 +561,11 @@
                 badgeClass = isGate ? "gate-ready" : "status-done";
                 pureStatus = "done";
             } else if (rew > 0) {
-                statusText = `REWORK (${done}/${total})`;
+                statusText = `REWORK (${done}/${activeTotal})`;
                 badgeClass = isGate ? "gate-blocked" : "status-feedback";
                 pureStatus = "rework";
             } else if (done > 0 || wip > 0) {
-                statusText = `WIP (${done}/${total})`;
+                statusText = `WIP (${done}/${activeTotal})`;
                 badgeClass = isGate ? "gate-wip" : "status-wip";
                 pureStatus = "wip";
             } else {
@@ -633,22 +665,40 @@
             let scaleF = document.getElementById('filter-loc-scale').value;
             let detailF = document.getElementById('filter-loc-detail').value;
             let finalF = document.getElementById('filter-loc-final').value;
+            let sortMode = document.getElementById('locSortSelect').value;
+
+            let filteredArray = window.globalLocationsData.filter(row => {
+                if (!matchesFilter(row['References'], refF)) return false;
+                if (!matchesFilter(row['Sketches'], sketchF)) return false;
+                if (!matchesFilter(row['AI Asset'], aiF)) return false;
+                if (!matchesFilter(row['3D Scaling'], scaleF)) return false;
+                if (!matchesFilter(row['3D Details'], detailF)) return false;
+                if (!matchesFilter(row['Final Status'], finalF)) return false;
+                return true;
+            });
+
+            // "Needs to be delivered this week" sorting
+            if (sortMode === 'this_week') {
+                filteredArray.sort((a, b) => {
+                    if (a.isDueThisWeek && !b.isDueThisWeek) return -1;
+                    if (!a.isDueThisWeek && b.isDueThisWeek) return 1;
+                    return a.originalOrder - b.originalOrder;
+                });
+            } else {
+                filteredArray.sort((a, b) => a.originalOrder - b.originalOrder);
+            }
 
             let locHtml = "";
-            window.globalLocationsData.forEach(row => {
-                if (!matchesFilter(row['References'], refF)) return;
-                if (!matchesFilter(row['Sketches'], sketchF)) return;
-                if (!matchesFilter(row['AI Asset'], aiF)) return;
-                if (!matchesFilter(row['3D Scaling'], scaleF)) return;
-                if (!matchesFilter(row['3D Details'], detailF)) return;
-                if (!matchesFilter(row['Final Status'], finalF)) return;
-
+            filteredArray.forEach(row => {
                 let worldName = String(row['World Name']).trim();
                 let catColor = String(row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
                 
+                // Optional: Add a visual indicator if it's urgent
+                let urgentAlert = row.isDueThisWeek && sortMode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
+
                 locHtml += `
                 <tr>
-                    <td><strong>${worldName}</strong></td>
+                    <td><strong>${worldName}</strong> ${urgentAlert}</td>
                     <td><span style="font-size: 11px; color:${catColor}; font-weight: bold;">${row['Category'] || "-"}</span></td>
                     <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
                     <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
@@ -669,19 +719,36 @@
             let outF = document.getElementById('filter-asset-out').value;
             let readyF = document.getElementById('filter-asset-ready').value;
             let castF = document.getElementById('filter-asset-cast').value;
+            let sortMode = document.getElementById('assetSortSelect').value;
+
+            let filteredArray = window.globalAssetsData.filter(row => {
+                if (!matchesFilter(row['References'], refF)) return false;
+                if (!matchesFilter(row['Sketches'], sketchF)) return false;
+                if (!matchesFilter(row['AI Asset'], aiF)) return false;
+                if (!matchesFilter(row['3D Outsourced'], outF)) return false;
+                if (!matchesFilter(row['3D Asset Ready'], readyF)) return false;
+                if (!matchesFilter(row['Casting'], castF)) return false;
+                return true;
+            });
+
+            // "Needs to be delivered this week" sorting
+            if (sortMode === 'this_week') {
+                filteredArray.sort((a, b) => {
+                    if (a.isDueThisWeek && !b.isDueThisWeek) return -1;
+                    if (!a.isDueThisWeek && b.isDueThisWeek) return 1;
+                    return a.originalOrder - b.originalOrder;
+                });
+            } else {
+                filteredArray.sort((a, b) => a.originalOrder - b.originalOrder);
+            }
 
             let assetsHtml = "";
-            window.globalAssetsData.forEach(row => {
-                if (!matchesFilter(row['References'], refF)) return;
-                if (!matchesFilter(row['Sketches'], sketchF)) return;
-                if (!matchesFilter(row['AI Asset'], aiF)) return;
-                if (!matchesFilter(row['3D Outsourced'], outF)) return;
-                if (!matchesFilter(row['3D Asset Ready'], readyF)) return;
-                if (!matchesFilter(row['Casting'], castF)) return;
+            filteredArray.forEach(row => {
+                let urgentAlert = row.isDueThisWeek && sortMode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
 
                 assetsHtml += `
                 <tr>
-                    <td><strong>${row['Asset Name']}</strong></td>
+                    <td><strong>${row['Asset Name']}</strong> ${urgentAlert}</td>
                     <td><span style="font-size: 11px; color:#666; font-weight: bold;">${row['Category'] || "-"}</span></td>
                     <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
                     <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
@@ -697,21 +764,33 @@
 
         function renderScenesTable() {
             let sortedArray = [...window.globalScenesArray];
-            let mode = window.currentSortMode;
+            let mode = document.getElementById('funnelSortSelect').value;
 
-            if (mode === 'date') sortedArray.sort((a, b) => a.completionTs - b.completionTs);
-            else if (mode === 'readiness') sortedArray.sort((a, b) => b.readinessScore - a.readinessScore);
-            else if (mode === 'progress') sortedArray.sort((a, b) => b.progressScore - a.progressScore);
-            else sortedArray.sort((a, b) => a.originalOrder - b.originalOrder);
+            if (mode === 'date') {
+                sortedArray.sort((a, b) => a.completionTs - b.completionTs);
+            } else if (mode === 'readiness') {
+                sortedArray.sort((a, b) => b.readinessScore - a.readinessScore);
+            } else if (mode === 'progress') {
+                sortedArray.sort((a, b) => b.progressScore - a.progressScore);
+            } else if (mode === 'this_week') {
+                sortedArray.sort((a, b) => {
+                    if (a.isDueThisWeek && !b.isDueThisWeek) return -1;
+                    if (!a.isDueThisWeek && b.isDueThisWeek) return 1;
+                    return a.originalOrder - b.originalOrder;
+                });
+            } else {
+                sortedArray.sort((a, b) => a.originalOrder - b.originalOrder);
+            }
 
             let scenesHtml = "";
             sortedArray.forEach(s => {
                 let scNum = s.sceneRow['Scene Number'] || s.sceneRow['Scene Number '];
                 let expandBtn = s.shots.length > 0 ? `<button class="expand-btn" onclick="event.stopPropagation(); toggleShots('${s.sceneId}')">View ${s.shots.length} Shots ▼</button>` : '';
+                let urgentAlert = s.isDueThisWeek && mode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
 
                 scenesHtml += `
                 <tr class="parent-row" onclick="toggleShots('${s.sceneId}')">
-                    <td><strong>Scene - ${scNum}: ${s.sceneRow['Scene Name'] || ""}</strong> ${expandBtn}</td>
+                    <td><strong>Scene - ${scNum}: ${s.sceneRow['Scene Name'] || ""}</strong> ${urgentAlert} ${expandBtn}</td>
                     <td class="desc-col">${s.sceneRow['Scene Description'] || "-"}</td>
                     <td><strong>${s.sceneRow['Scene Duration'] || "-"}</strong></td>
                     <td class="col-overall-status">${getBadgeHTML(s.sceneRow['scene Status'] || s.sceneRow['Scene Status'], null, false, true)}</td>
@@ -1037,8 +1116,13 @@
                 let totalLocations = 0; 
                 let sceneWorldMap = {}; 
 
-                locationsData.forEach(row => {
+                locationsData.forEach((row, idx) => {
                     if(!row['World Name']) return;
+                    
+                    row.originalOrder = idx;
+                    // Tag if it needs to be delivered within 7 days
+                    row.isDueThisWeek = isDateThisWeekOrOverdue(row['Final Status Date'], row['Final Status']);
+
                     window.globalLocationsData.push(row); 
                     
                     totalLocations++;
@@ -1067,8 +1151,15 @@
                 renderLocationsTable();
 
                 // 🟢 ASSETS PROCESSING
-                assetsData.forEach(row => {
+                assetsData.forEach((row, idx) => {
                     if(!row['Asset Name']) return;
+                    
+                    row.originalOrder = idx;
+                    // Tag if it needs to be delivered within 7 days
+                    let isReadyDue = isDateThisWeekOrOverdue(row['3D Asset Ready Date'], row['3D Asset Ready']);
+                    let isCastDue = isDateThisWeekOrOverdue(row['Casting Date'], row['Casting']);
+                    row.isDueThisWeek = isReadyDue || isCastDue;
+
                     window.globalAssetsData.push(row); 
                     updatePieChart(row['AI Asset']);
                 });
@@ -1216,7 +1307,6 @@
                         }
 
                     } else {
-                        // Fallback logic if there are no shots inside the scene (treating scene as a single block)
                         let stLow = String(s.sceneRow['Statics'] || "").toLowerCase();
                         if(stLow === 'done' || stLow === 'approved') { counts.st_sc.done++; dur.st.done += sceneDurSecs; }
                         else if(stLow === 'wip' || stLow === 'in progress') { counts.st_sc.wip++; dur.st.wip += sceneDurSecs; }
@@ -1244,6 +1334,17 @@
                     
                     s.sceneId = sceneId;
                     s.originalOrder = sceneOrderIdx++;
+                    
+                    // 🟢 TAG IF SCENE IS DUE THIS WEEK
+                    s.isDueThisWeek = false;
+                    if (s.completionTs !== Infinity) {
+                        let nextWeek = new Date(today);
+                        nextWeek.setDate(today.getDate() + 7);
+                        let isFullyDone = (rcDoneShots === totalS);
+                        if (!isFullyDone && s.completionTs <= nextWeek.getTime()) {
+                            s.isDueThisWeek = true;
+                        }
+                    }
 
                     window.globalScenesArray.push(s);
                 });
