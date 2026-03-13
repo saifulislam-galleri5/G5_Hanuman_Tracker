@@ -46,19 +46,19 @@
         .tab-content.active { display: block; }
         
         /* 🟢 SCROLLABLE TABLES & FROZEN HEADERS CSS */
-        .table-container { width: 100%; max-height: 65vh; overflow-y: auto; overflow-x: auto; border: 1px solid #e9ecef; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 1400px; }
+        .table-container { width: 100%; max-height: 65vh; overflow-y: auto; overflow-x: auto; border: 1px solid #e9ecef; border-radius: 8px; background: white;}
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1400px; }
         
         /* Sticky Header Magic */
-        th { position: sticky; top: 0; z-index: 10; background-color: #f8f9fa; color: #495057; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 8px; text-align: center; vertical-align: middle; box-shadow: 0 2px 4px -1px rgba(0,0,0,0.1); }
+        th { position: sticky; top: 0; z-index: 10; background-color: #f8f9fa; color: #495057; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 8px; text-align: center; vertical-align: middle; }
+        th::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; border-bottom: 2px solid #dee2e6; } /* Bottom border for sticky header */
         
         td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #f1f3f5; vertical-align: middle;}
         td:first-child, th:first-child { text-align: left; padding-left: 15px;}
-        tr.parent-row { background-color: #ffffff; border-bottom: 2px solid #e2e8f0; }
+        tr.parent-row { background-color: #ffffff; }
         tr.parent-row:hover { background-color: #f1f5f9; cursor: pointer;}
         
         .desc-col { text-align: left !important; font-size: 11px; max-width: 200px; line-height: 1.4; color: #475569; }
-        .loc-col { text-align: left !important; font-size: 11px; font-weight: 600; color: #1e3a8a; }
         
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 70px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
         .status-done { background-color: #C1E1C1; color: #2E5C2E; } 
@@ -102,9 +102,7 @@
         .team-bar-fg { height: 100%; background-color: #3b82f6; border-radius: 4px; transition: width 0.5s ease; }
         .team-bar-fg.complete { background-color: #10b981; }
         
-        .history-table { width: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 6px; border-collapse: collapse; margin-top: 5px; }
-        .history-table th { background: #f8f9fa; font-size: 11px; padding: 6px 10px; color: #475569; top: 0; position: static; box-shadow: none; } /* Inner th override */
-        .history-table td { font-size: 12px; padding: 6px 10px; border-bottom: 1px solid #f1f5f9; }
+        .history-table th { top: 0; position: static; box-shadow: none; border-bottom: 1px solid #cbd5e1; } /* Inner table override */
     </style>
 </head>
 <body>
@@ -201,14 +199,14 @@
         <div class="sort-banner">
             <div>
                 <h3 style="margin: 0; color: #e65100; font-size: 18px;">🔥 Smart Pipeline Sorting</h3>
-                <p style="margin: 5px 0 0 0; font-size: 13px; color: #f57c00;">Change how you view the scenes to identify immediate priorities and bottlenecks.</p>
+                <p style="margin: 5px 0 0 0; font-size: 13px; color: #f57c00;">Filter or sort to identify immediate priorities and bottlenecks.</p>
             </div>
             <select id="funnelSortSelect" class="sort-select" onchange="applySelectStyle(this.id); renderScenesTable();">
                 <option value="default">🔢 Scene Order (Default)</option>
                 <option value="date">📅 Earliest Delivery Date First</option>
                 <option value="readiness">📦 Asset Readiness (Ready to Shoot)</option>
                 <option value="progress">🚀 Scene Progress (Deepest in Funnel)</option>
-                <option value="this_week">🚨 Needs Video Gen this week</option>
+                <option value="this_week">🚨 FILTER: Needs Video Gen this week</option>
             </select>
         </div>
         
@@ -243,7 +241,7 @@
             </div>
             <select id="assetSortSelect" class="sort-select" style="padding: 6px 12px; font-size: 13px;" onchange="applySelectStyle(this.id); renderAssetsTable();">
                 <option value="default">🔢 Asset Order (Default)</option>
-                <option value="this_week">🚨 3D Asset required this week</option>
+                <option value="this_week">🚨 FILTER: 3D Asset required this week</option>
             </select>
         </div>
 
@@ -301,7 +299,7 @@
             </div>
             <select id="locSortSelect" class="sort-select" style="padding: 6px 12px; font-size: 13px;" onchange="applySelectStyle(this.id); renderLocationsTable();">
                 <option value="default">🔢 Location Order (Default)</option>
-                <option value="this_week">🚨 3D Scaling required this week</option>
+                <option value="this_week">🚨 FILTER: 3D Scaling required this week</option>
             </select>
         </div>
 
@@ -404,13 +402,6 @@
             if (m > 0 && s > 0) return `${m}m ${s}s`;
             if (m > 0 && s === 0) return `${m}m`;
             return `${s}s`;
-        }
-
-        function getStatusText(doneCount, requiredCount) {
-            if (requiredCount === 0 && doneCount === 0) return `<span style="color:#7A7A00;">On Track</span>`;
-            if (doneCount > requiredCount) return `<span style="color:#2E5C2E;">Ahead</span>`;
-            if (doneCount < requiredCount) return `<span style="color:#C23B22;">Behind</span>`;
-            return `<span style="color:#7A7A00;">On Track</span>`;
         }
 
         function switchTab(tabId) {
@@ -561,7 +552,6 @@
             let statusText = "";
             let badgeClass = "";
             let pureStatus = "pending";
-
             let activeTotal = total - notReq;
 
             if (activeTotal === 0 && notReq > 0) {
@@ -689,12 +679,10 @@
                 return true;
             });
 
+            // 🟢 STRICT URGENCY FILTER
             if (sortMode === 'this_week') {
-                filteredArray.sort((a, b) => {
-                    if (a.isDueThisWeek && !b.isDueThisWeek) return -1;
-                    if (!a.isDueThisWeek && b.isDueThisWeek) return 1;
-                    return a.originalOrder - b.originalOrder;
-                });
+                filteredArray = filteredArray.filter(row => row.isDueThisWeek);
+                filteredArray.sort((a, b) => a.originalOrder - b.originalOrder);
             } else {
                 filteredArray.sort((a, b) => a.originalOrder - b.originalOrder);
             }
@@ -703,11 +691,10 @@
             filteredArray.forEach(row => {
                 let worldName = String(row['World Name']).trim();
                 let catColor = String(row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
-                let urgentAlert = row.isDueThisWeek && sortMode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
-
+                
                 locHtml += `
                 <tr>
-                    <td><strong>${worldName}</strong> ${urgentAlert}</td>
+                    <td><strong>${worldName}</strong></td>
                     <td><span style="font-size: 11px; color:${catColor}; font-weight: bold;">${row['Category'] || "-"}</span></td>
                     <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
                     <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
@@ -740,23 +727,19 @@
                 return true;
             });
 
+            // 🟢 STRICT URGENCY FILTER
             if (sortMode === 'this_week') {
-                filteredArray.sort((a, b) => {
-                    if (a.isDueThisWeek && !b.isDueThisWeek) return -1;
-                    if (!a.isDueThisWeek && b.isDueThisWeek) return 1;
-                    return a.originalOrder - b.originalOrder;
-                });
+                filteredArray = filteredArray.filter(row => row.isDueThisWeek);
+                filteredArray.sort((a, b) => a.originalOrder - b.originalOrder);
             } else {
                 filteredArray.sort((a, b) => a.originalOrder - b.originalOrder);
             }
 
             let assetsHtml = "";
             filteredArray.forEach(row => {
-                let urgentAlert = row.isDueThisWeek && sortMode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
-
                 assetsHtml += `
                 <tr>
-                    <td><strong>${row['Asset Name']}</strong> ${urgentAlert}</td>
+                    <td><strong>${row['Asset Name']}</strong></td>
                     <td><span style="font-size: 11px; color:#666; font-weight: bold;">${row['Category'] || "-"}</span></td>
                     <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
                     <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
@@ -781,11 +764,9 @@
             } else if (mode === 'progress') {
                 sortedArray.sort((a, b) => b.progressScore - a.progressScore);
             } else if (mode === 'this_week') {
-                sortedArray.sort((a, b) => {
-                    if (a.isDueThisWeek && !b.isDueThisWeek) return -1;
-                    if (!a.isDueThisWeek && b.isDueThisWeek) return 1;
-                    return a.originalOrder - b.originalOrder;
-                });
+                // 🟢 STRICT URGENCY FILTER
+                sortedArray = sortedArray.filter(a => a.isDueThisWeek);
+                sortedArray.sort((a, b) => a.originalOrder - b.originalOrder);
             } else {
                 sortedArray.sort((a, b) => a.originalOrder - b.originalOrder);
             }
@@ -794,11 +775,10 @@
             sortedArray.forEach(s => {
                 let scNum = s.sceneRow['Scene Number'] || s.sceneRow['Scene Number '];
                 let expandBtn = s.shots.length > 0 ? `<button class="expand-btn" onclick="event.stopPropagation(); toggleShots('${s.sceneId}')">View ${s.shots.length} Shots ▼</button>` : '';
-                let urgentAlert = s.isDueThisWeek && mode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
-
+                
                 scenesHtml += `
                 <tr class="parent-row" onclick="toggleShots('${s.sceneId}')">
-                    <td><strong>Scene - ${scNum}: ${s.sceneRow['Scene Name'] || ""}</strong> ${urgentAlert} ${expandBtn}</td>
+                    <td><strong>Scene - ${scNum}: ${s.sceneRow['Scene Name'] || ""}</strong> ${expandBtn}</td>
                     <td class="desc-col">${s.sceneRow['Scene Description'] || "-"}</td>
                     <td><strong>${s.sceneRow['Scene Duration'] || "-"}</strong></td>
                     <td class="col-overall-status">${getBadgeHTML(s.sceneRow['scene Status'] || s.sceneRow['Scene Status'], null, false, true)}</td>
@@ -830,7 +810,7 @@
                 });
             });
             
-            if (scenesHtml === "") scenesHtml = "<tr><td colspan='11'>No data found. Ensure your Master Funnel CSV has correct column names.</td></tr>";
+            if (scenesHtml === "") scenesHtml = "<tr><td colspan='11'>No data found perfectly matching your filters.</td></tr>";
             document.getElementById('tableBody').innerHTML = scenesHtml;
         }
 
@@ -844,7 +824,6 @@
                 return;
             }
 
-            // 🟢 Extract dates dynamically starting from column 3 (index 3) since Hardware is now at index 2
             let dates = [];
             let headerRow = rawData[0];
             for (let c = 3; c < headerRow.length; c += 3) {
@@ -863,7 +842,7 @@
                 
                 let col0 = String(row[0] || "").trim();
                 let col1 = String(row[1] || "").trim();
-                let col2 = String(row[2] || "").trim(); // HARDWARE COLUMN
+                let col2 = String(row[2] || "").trim(); 
 
                 if (!col0 && !col1) continue; 
 
@@ -946,14 +925,14 @@
                         <h3 style="margin: 0; color: #0f172a; font-size: 16px; font-weight: bold;">🏢 ${deptName}</h3>
                     </div>
                     <div class="table-container" style="max-height: 400px; border-radius: 0; border: none;">
-                        <table style="width: 100%; border-collapse: collapse; margin: 0; min-width:100%;">
-                            <thead style="background-color: #ffffff;">
+                        <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 0; min-width:100%;">
+                            <thead>
                                 <tr>
-                                    <th style="width: 250px; padding: 10px 20px; text-align: left; font-size: 11px; color: #64748b;">Member / Details</th>
-                                    <th style="width: 150px; padding: 10px 20px; text-align: left; font-size: 11px; color: #64748b;">Progress</th>
-                                    <th style="padding: 10px 20px; text-align: left; font-size: 11px; color: #64748b;">Current Active Task</th>
-                                    <th style="padding: 10px 20px; text-align: center; font-size: 11px; color: #64748b;">Target Date</th>
-                                    <th style="padding: 10px 20px; text-align: center; font-size: 11px; color: #64748b;">Health</th>
+                                    <th style="width: 250px;">Member / Details</th>
+                                    <th style="width: 150px;">Progress</th>
+                                    <th>Current Active Task</th>
+                                    <th style="width: 120px;">Target Date</th>
+                                    <th style="width: 100px;">Health</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1031,13 +1010,13 @@
                     if (allTasks.length > 0) {
                         let historyHtml = `<tr class="shot-row ${m.safeId}"><td colspan="5" style="padding: 15px 25px; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">`;
                         historyHtml += `<h4 style="margin:0 0 10px 0; color:#475569; font-size: 13px;">Complete Timeline for ${m.name}</h4>`;
-                        historyHtml += `<table class="history-table" style="background:white; width:100%; border:1px solid #cbd5e1; border-radius:6px; border-collapse: collapse; min-width: 100%;">
+                        historyHtml += `<table class="history-table" style="background:white; width:100%; border:1px solid #cbd5e1; border-radius:6px; min-width: 100%;">
                                             <tr style="background:#f1f5f9;">
-                                                <th style="width:120px; padding:6px 10px; font-size:11px; text-align:left; border-bottom: 1px solid #cbd5e1;">Date</th>
-                                                <th style="padding:6px 10px; font-size:11px; text-align:left; border-bottom: 1px solid #cbd5e1;">Task Description</th>
-                                                <th style="padding:6px 10px; font-size:11px; text-align:center; border-bottom: 1px solid #cbd5e1;">Internal Status</th>
-                                                <th style="padding:6px 10px; font-size:11px; text-align:center; border-bottom: 1px solid #cbd5e1;">External Status</th>
-                                                <th style="padding:6px 10px; font-size:11px; text-align:center; border-bottom: 1px solid #cbd5e1;">Health</th>
+                                                <th style="width:120px; padding:6px 10px; font-size:11px; text-align:left;">Date</th>
+                                                <th style="padding:6px 10px; font-size:11px; text-align:left;">Task Description</th>
+                                                <th style="padding:6px 10px; font-size:11px; text-align:center;">Internal Status</th>
+                                                <th style="padding:6px 10px; font-size:11px; text-align:center;">External Status</th>
+                                                <th style="padding:6px 10px; font-size:11px; text-align:center;">Health</th>
                                             </tr>`;
                         
                         let flatHistory = [];
@@ -1057,7 +1036,7 @@
 
                         flatHistory.forEach(h => {
                             let hHealth = h.isConcerning ? `<span style="color:#d32f2f; font-weight:bold; font-size:11px;">⚠️ Delayed Task</span>` : `<span style="color:#10b981; font-weight:bold; font-size:11px;">Normal</span>`;
-                            historyHtml += `<tr style="border-bottom:1px solid #f1f5f9;">
+                            historyHtml += `<tr>
                                                 <td style="padding:6px 10px; font-size:12px; text-align:left;"><strong>${h.dateStr}</strong></td>
                                                 <td style="padding:6px 10px; font-size:12px; text-align:left;">${h.desc}</td>
                                                 <td style="padding:6px 10px; font-size:12px; text-align:center;">${getBadgeHTML(h.internal, "")}</td>
@@ -1128,7 +1107,7 @@
                     if(!row['World Name']) return;
                     
                     row.originalOrder = idx;
-                    // FIX: Urgency based strictly on 3D Scaling
+                    // 🟢 STRICT URGENCY LOGIC FOR LOCATIONS: 3D Scaling
                     let scalingStatus = String(row['3D Scaling'] || "").toLowerCase();
                     row.isDueThisWeek = isDateThisWeekOrOverdue(row['3D Scaling Date'], scalingStatus);
 
@@ -1136,9 +1115,21 @@
                     
                     totalLocations++;
                     let status = String(row['Final Status'] || "").toLowerCase();
-                    let isDone = status === 'done' || status === 'approved' || status === 'ready' || status === 'cleared';
+                    let isDone = status === 'done' || status === 'approved' || status === 'ready' || status === 'cleared' || status === 'not required' || status === 'n/a' || status === 'na';
                     let isWip = status === 'wip' || status === 'progress' || status === 'in progress';
                     let isRew = status === 'rework' || status === 'feedback';
+
+                    // 🟢 N/A OVERRIDE RULE FOR LOCATIONS
+                    let scaleStat = String(row['3D Scaling'] || "").toLowerCase();
+                    let detailStat = String(row['3D Details'] || "").toLowerCase();
+                    let scaleNa = scaleStat === 'na' || scaleStat === 'n/a' || scaleStat === 'not required';
+                    let detailNa = detailStat === 'na' || detailStat === 'n/a' || detailStat === 'not required';
+
+                    if (scaleNa && detailNa) {
+                        isDone = true;
+                        isWip = false;
+                        isRew = false;
+                    }
 
                     if (isDone) locStatsTracker.done++;
                     else if (isWip) locStatsTracker.wip++;
@@ -1164,7 +1155,7 @@
                     if(!row['Asset Name']) return;
                     
                     row.originalOrder = idx;
-                    // FIX: Urgency based strictly on 3D Asset Ready
+                    // 🟢 STRICT URGENCY LOGIC FOR ASSETS: 3D Asset Ready
                     let readyStatus = String(row['3D Asset Ready'] || "").toLowerCase();
                     row.isDueThisWeek = isDateThisWeekOrOverdue(row['3D Asset Ready Date'], readyStatus);
 
@@ -1263,7 +1254,7 @@
                     let assetsDoneShots = 0;
                     
                     let maxRcDateTs = 0;
-                    let maxMoDateTs = 0; // FIX: Tracking max Motion date for urgency logic
+                    let maxMoDateTs = 0; 
                     
                     let validRcDateFound = false;
                     let validMoDateFound = false;
@@ -1338,6 +1329,7 @@
                         let ts = new Date(s.sceneRow['Recompositing Date']).getTime();
                         if(!isNaN(ts)) { maxRcDateTs = ts; validRcDateFound = true; }
                     }
+                    
                     if(!validMoDateFound && s.sceneRow['Motion Date']) {
                         let ts = new Date(s.sceneRow['Motion Date']).getTime();
                         if(!isNaN(ts)) { maxMoDateTs = ts; validMoDateFound = true; }
@@ -1355,13 +1347,21 @@
                     s.sceneId = sceneId;
                     s.originalOrder = sceneOrderIdx++;
 
-                    // 🟢 FIX: URGENCY STRICTLY BASED ON VIDEO GEN (MOTION DATE)
+                    // 🟢 STRICT URGENCY LOGIC FOR SCENES: Video Gen (Motion)
                     s.isDueThisWeek = false;
+                    let nextWeek = new Date(today);
+                    nextWeek.setDate(today.getDate() + 7);
+
                     if (validMoDateFound) {
-                        let nextWeek = new Date(today);
-                        nextWeek.setDate(today.getDate() + 7);
                         let isVideoFullyDone = (moDoneShots === totalS);
                         if (!isVideoFullyDone && maxMoDateTs <= nextWeek.getTime()) {
+                            s.isDueThisWeek = true;
+                        }
+                    } else if (s.sceneRow['Motion Date']) {
+                        let ts = new Date(s.sceneRow['Motion Date']).getTime();
+                        let stat = String(s.sceneRow['Motion'] || "").toLowerCase();
+                        let isDone = stat === 'done' || stat === 'approved' || stat === 'ready' || stat === 'cleared' || stat === 'not required' || stat === 'n/a' || stat === 'na';
+                        if (!isDone && ts <= nextWeek.getTime()) {
                             s.isDueThisWeek = true;
                         }
                     }
