@@ -12,11 +12,12 @@
         .progress-container { width: 100%; background-color: #e9ecef; border-radius: 12px; margin-bottom: 25px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); height: 24px; overflow: hidden;}
         .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #AEC6CF, #77DD77); text-align: center; line-height: 24px; color: white; font-weight: bold; font-size: 12px; transition: width 0.8s ease-in-out; }
         
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        /* 10 Cards in a 5-column layout */
+        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 25px; }
         .card { background: white; padding: 15px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #AEC6CF; transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between;}
         .card:hover { transform: translateY(-3px); }
         .card h3 { margin: 0 0 5px 0; color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .card .number { font-size: 24px; font-weight: bold; color: #2c3e50; margin: 5px 0;}
+        .card .number { font-size: 22px; font-weight: bold; color: #2c3e50; margin: 5px 0;}
         .card .target { font-size: 11px; color: #888; font-weight: bold; margin-bottom: 8px;}
         
         .mini-stats { display: flex; justify-content: center; gap: 4px; font-size: 11px; font-weight: bold; margin-top: auto; flex-wrap: wrap;}
@@ -40,18 +41,21 @@
         .tab-content { display: none; background: white; padding: 20px; border-radius: 0 8px 8px 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef; border-top: none; overflow-x: auto;}
         .tab-content.active { display: block; }
         
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1300px; }
         th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #f1f3f5; vertical-align: middle;}
         th { background-color: #f8f9fa; color: #495057; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
         td:first-child, th:first-child { text-align: left; padding-left: 15px;}
         tr.parent-row { background-color: #ffffff; border-bottom: 2px solid #e2e8f0; }
         tr.parent-row:hover { background-color: #f1f5f9; cursor: pointer;}
         
+        .desc-col { text-align: left !important; font-size: 11px; max-width: 250px; line-height: 1.4; color: #475569; }
+        
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 70px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
         .status-done { background-color: #C1E1C1; color: #2E5C2E; } 
         .status-wip { background-color: #FDFD96; color: #7A7A00; }  
         .status-feedback { background-color: #FFB7B2; color: #8A2B2B; } 
         .status-pending { background-color: #E2E3E5; color: #495057; } 
+        .status-na { background-color: #f1f5f9; color: #94a3b8; } 
 
         .target-date { font-size: 10px; color: #888; margin-top: 4px; display: block; font-weight: 500; letter-spacing: 0.2px;}
         .overdue-date { color: #d32f2f; font-weight: 700; background-color: #ffebee; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; border: 1px solid #ffcdd2; }
@@ -60,6 +64,7 @@
         .gate-ready { color: #2E5C2E; background: #C1E1C1; padding: 4px 8px; border-radius: 6px; display: inline-block;}
         .gate-blocked { color: #8A2B2B; background: #FFB7B2; padding: 4px 8px; border-radius: 6px; display: inline-block;}
         .gate-wip { color: #7A7A00; background: #FDFD96; padding: 4px 8px; border-radius: 6px; display: inline-block;}
+        .gate-na { color: #94a3b8; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; display: inline-block;}
 
         .scene-prep { background-color: #D6E4FF; color: #1C4ED8; border: 1px solid #ADC6FF;}
         .scene-prod { background-color: #F3E8FF; color: #6B21A8; border: 1px solid #D8B4FE;}
@@ -77,12 +82,16 @@
         .shot-indent::before { content: "↳ "; color: #cbd5e1;}
 
         .sort-banner { display: flex; justify-content: space-between; align-items: center; background-color: #fff3e0; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffcc80; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .toggle-btn { background-color: #e0e0e0; color: #555; border: none; padding: 10px 20px; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-        .toggle-btn.active { background-color: #ff9800; color: white; box-shadow: 0 4px 8px rgba(255,152,0,0.3); }
-
+        .sort-select { padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; color: #333; font-size: 14px; cursor: pointer; transition: all 0.2s ease; outline: none; background-color: white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .sort-select:hover { border-color: #ff9800; }
+        
         .team-bar-bg { width: 100%; background-color: #e9ecef; height: 8px; border-radius: 4px; margin-top: 4px; overflow: hidden; }
         .team-bar-fg { height: 100%; background-color: #3b82f6; border-radius: 4px; transition: width 0.5s ease; }
         .team-bar-fg.complete { background-color: #10b981; }
+        
+        .history-table { width: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 6px; border-collapse: collapse; margin-top: 5px; }
+        .history-table th { background: #f8f9fa; font-size: 11px; padding: 6px 10px; color: #475569; }
+        .history-table td { font-size: 12px; padding: 6px 10px; border-bottom: 1px solid #f1f5f9; }
     </style>
 </head>
 <body>
@@ -101,54 +110,55 @@
     </div>
 
     <div class="dashboard">
-        <div class="card" style="border-top-color: #98FF98; background-color: #fafffa;">
-            <h3>Overall Scenes</h3>
-            <div class="number" id="card-sc">0 / 104</div>
-            <div class="mini-stats" id="mini-sc"></div>
-        </div>
         <div class="card" style="border-top-color: #FFB7B2;">
-            <h3>Storyboards</h3>
+            <h3>Storyboard (Scenes)</h3>
             <div class="number" id="card-sb">0 / 104</div>
-            <div class="target" id="target-sb">Req: 0</div>
+            <div class="mini-stats" id="mini-sb"></div>
         </div>
         <div class="card" style="border-top-color: #FFDAC1;">
             <h3>World/Locs</h3>
             <div class="number" id="card-wd">0 / 0</div>
-            <div class="target" id="target-wd">Req: 0</div>
+            <div class="mini-stats" id="mini-wd"></div>
         </div>
-        
         <div class="card" style="border-top-color: #FDFD96;">
-            <h3>Statics (Scenes)</h3>
+            <h3>Static (Scenes)</h3>
             <div class="number" id="card-st-sc">0 / 104</div>
+            <div class="mini-stats" id="mini-st-sc"></div>
         </div>
-
         <div class="card" style="border-top-color: #FDFD96;">
-            <h3>Statics (Shots)</h3>
+            <h3>Static (Shots)</h3>
             <div class="number" id="card-st">0 / 3120</div>
-            <div class="target" id="target-st">Req: 0</div>
             <div class="mini-stats" id="mini-st"></div>
         </div>
-        
+        <div class="card" style="border-top-color: #FDFD96; background-color: #fffff8;">
+            <h3>Static Duration</h3>
+            <div class="number" id="card-st-dur" style="color: #7A7A00;">0m</div>
+            <div class="target">Out of 120 Mins</div>
+        </div>
+
         <div class="card" style="border-top-color: #B4E1FF;">
             <h3>Video Gen (Scenes)</h3>
             <div class="number" id="card-mo-sc">0 / 104</div>
+            <div class="mini-stats" id="mini-mo-sc"></div>
         </div>
-
         <div class="card" style="border-top-color: #B4E1FF;">
             <h3>Video Gen (Shots)</h3>
             <div class="number" id="card-mo">0 / 3120</div>
-            <div class="target" id="target-mo">Req: 0</div>
             <div class="mini-stats" id="mini-mo"></div>
+        </div>
+        <div class="card" style="border-top-color: #B4E1FF; background-color: #f0f8ff;">
+            <h3>Video Gen Duration</h3>
+            <div class="number" id="card-mo-dur" style="color: #2c5282;">0m</div>
+            <div class="target">Out of 120 Mins</div>
         </div>
         <div class="card" style="border-top-color: #C1E1C1;">
             <h3>MoCap Shoot</h3>
             <div class="number" id="card-mc">0 / 104</div>
-            <div class="target" id="target-mc">Req: 0</div>
+            <div class="mini-stats" id="mini-mc"></div>
         </div>
         <div class="card" style="border-top-color: #AEC6CF;">
             <h3>Recompositing</h3>
             <div class="number" id="card-rc">0 / 3120</div>
-            <div class="target" id="target-rc">Req: 0</div>
             <div class="mini-stats" id="mini-rc"></div>
         </div>
     </div>
@@ -175,15 +185,23 @@
     <div id="funnel" class="tab-content active">
         <div class="sort-banner">
             <div>
-                <h3 style="margin: 0; color: #e65100; font-size: 18px;">🔥 Smart Sorting (Readiness View)</h3>
-                <p style="margin: 5px 0 0 0; font-size: 13px; color: #f57c00;">Float the scenes closest to final delivery (Video Gen, MoCap, Recomp) to the top of the pipeline.</p>
+                <h3 style="margin: 0; color: #e65100; font-size: 18px;">🔥 Smart Pipeline Sorting</h3>
+                <p style="margin: 5px 0 0 0; font-size: 13px; color: #f57c00;">Change how you view the scenes to identify immediate priorities and bottlenecks.</p>
             </div>
-            <button id="sortReadinessBtn" class="toggle-btn" onclick="toggleSort()">Toggle: OFF (Numerical Order)</button>
+            <select id="funnelSortSelect" class="sort-select" onchange="applySort(this.value)">
+                <option value="default">🔢 Scene Order (Default)</option>
+                <option value="date">📅 Earliest Delivery Date First</option>
+                <option value="readiness">📦 Asset Readiness (Ready to Shoot)</option>
+                <option value="progress">🚀 Scene Progress (Deepest in Funnel)</option>
+            </select>
         </div>
+        
         <table>
             <thead>
                 <tr>
-                    <th style="width: 250px;">Scene / Shot</th>
+                    <th style="width: 200px;">Scene / Shot</th>
+                    <th style="width: 250px;">Description</th>
+                    <th style="width: 70px;">Duration</th>
                     <th class="col-overall-status">Scene Status</th>
                     <th>Storyboard</th>
                     <th>World (Env)</th>
@@ -195,7 +213,7 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <tr><td colspan="9" class="loading-text">Fetching Scenes & Shots data from Google Sheets...</td></tr>
+                <tr><td colspan="11" class="loading-text">Fetching Scenes & Shots data from Google Sheets...</td></tr>
             </tbody>
         </table>
     </div>
@@ -212,10 +230,11 @@
                     <th>AI Asset</th>
                     <th>3D Outsourced</th>
                     <th>3D Asset Ready</th>
+                    <th>Casting</th>
                 </tr>
             </thead>
             <tbody id="assetsTableBody">
-                <tr><td colspan="8" class="loading-text">Fetching Assets data from Google Sheets...</td></tr>
+                <tr><td colspan="9" class="loading-text">Fetching Assets data from Google Sheets...</td></tr>
             </tbody>
         </table>
     </div>
@@ -228,6 +247,7 @@
                     <th>Category</th>
                     <th>Linked Scenes</th>
                     <th>References</th>
+                    <th>Sketches</th>
                     <th>AI Asset</th>
                     <th>3D Scaling</th>
                     <th>3D Details/Texturing</th>
@@ -235,7 +255,7 @@
                 </tr>
             </thead>
             <tbody id="locationsTableBody">
-                <tr><td colspan="8" class="loading-text">Fetching Locations data from Google Sheets...</td></tr>
+                <tr><td colspan="9" class="loading-text">Fetching Locations data from Google Sheets...</td></tr>
             </tbody>
         </table>
     </div>
@@ -245,7 +265,6 @@
             <h3 style="margin:0 0 5px 0; color: #1e3a8a;">Department Workload & History</h3>
             <p style="margin:0; font-size:13px; color: #3b82f6;">Tracking artists by their department. Click on an artist to drop down and view their entire past and future task history.</p>
         </div>
-        
         <div id="teamTableBody">
             <div class="loading-text" style="background:white; border-radius:8px;">Processing Team Workloads...</div>
         </div>
@@ -260,16 +279,29 @@
         const PROJECT_END   = "2026-05-10"; 
 
         window.globalScenesArray = [];
-        window.isSortedByReadiness = false;
+        window.currentSortMode = 'default'; 
 
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
         
-        function getStatusText(doneCount, requiredCount) {
-            if (requiredCount === 0 && doneCount === 0) return `<span style="color:#7A7A00;">On Track</span>`;
-            if (doneCount > requiredCount) return `<span style="color:#2E5C2E;">Ahead</span>`;
-            if (doneCount < requiredCount) return `<span style="color:#C23B22;">Behind</span>`;
-            return `<span style="color:#7A7A00;">On Track</span>`;
+        // Duration Helper Functions
+        function parseDurationToSeconds(val) {
+            if(!val) return 0;
+            let str = String(val).toLowerCase().trim();
+            if (str.includes(":")) {
+                let parts = str.split(":");
+                return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
+            }
+            let num = parseFloat(str.replace(/[^0-9.]/g, ''));
+            return isNaN(num) ? 0 : num; 
+        }
+
+        function formatDuration(totalSec) {
+            if (totalSec === 0) return "0m";
+            let m = Math.floor(totalSec / 60);
+            let s = Math.floor(totalSec % 60);
+            if (s > 0) return `${m}m ${s}s`;
+            return `${m}m`;
         }
 
         function switchTab(tabId) {
@@ -293,15 +325,17 @@
             }
         }
 
-        function toggleSort() {
-            window.isSortedByReadiness = !window.isSortedByReadiness;
-            let btn = document.getElementById('sortReadinessBtn');
-            if (window.isSortedByReadiness) {
-                btn.classList.add('active');
-                btn.innerHTML = "Toggle: ON (Sorted by Readiness)";
+        function applySort(mode) {
+            window.currentSortMode = mode;
+            let selectBox = document.getElementById('funnelSortSelect');
+            if(mode === 'default') {
+                selectBox.style.backgroundColor = "white";
+                selectBox.style.color = "#333";
+                selectBox.style.borderColor = "#ccc";
             } else {
-                btn.classList.remove('active');
-                btn.innerHTML = "Toggle: OFF (Numerical Order)";
+                selectBox.style.backgroundColor = "#ff9800";
+                selectBox.style.color = "white";
+                selectBox.style.borderColor = "#e65100";
             }
             renderScenesTable();
         }
@@ -313,14 +347,12 @@
         const scenesCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=0&nocache=${ts}`; 
         const assetsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=366020038&nocache=${ts}`; 
         const locationsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340&nocache=${ts}`; 
-        
-        // 🚀 LIVE TEAM URL: Automatically exports GID 162642321 to raw CSV!
         const teamCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=162642321&nocache=${ts}`; 
 
         function isOverdue(dateStr, status) {
             if (!dateStr) return false;
             let lower = (status || "").trim().toLowerCase();
-            if (lower === "done" || lower === "approved" || lower === "ready" || lower === "cleared") return false;
+            if (lower === "done" || lower === "approved" || lower === "ready" || lower === "cleared" || lower === "not required" || lower === "n/a" || lower === "na") return false;
             
             dateStr = dateStr.replace("'", " 20");
             let targetDate = new Date(dateStr);
@@ -329,19 +361,24 @@
             let today = new Date();
             today.setHours(0,0,0,0);
             targetDate.setHours(0,0,0,0);
-            
             return targetDate < today;
         }
 
         function getBadgeHTML(status, dateStr, isGate = false, isSceneStatus = false) {
             let text = (status || "").trim();
+            let lower = text.toLowerCase();
+
+            // Handle Not Required explicitly
+            if (lower === 'not required' || lower === 'n/a' || lower === 'na') {
+                return `<span class="status-badge status-na">N/A</span>`;
+            }
+
             let dateClass = "target-date";
             if (isOverdue(dateStr, text)) dateClass += " overdue-date";
             let dateHtml = dateStr ? `<span class="${dateClass}">${dateStr}</span>` : '';
             
             if(!text) return `<span class="status-badge status-pending">-</span>${dateHtml}`; 
             
-            let lower = text.toLowerCase();
             if (isSceneStatus) {
                 if(lower === "in prep") return `<span class="status-badge scene-prep">IN PREP</span>${dateHtml}`;
                 if(lower === "in prod") return `<span class="status-badge scene-prod">IN PROD</span>${dateHtml}`;
@@ -366,15 +403,23 @@
             if (!shots || shots.length === 0) return `<span class="status-badge status-pending">-</span>`;
             
             let total = shots.length;
-            let done = 0, wip = 0, rew = 0;
+            let done = 0, wip = 0, rew = 0, notReq = 0;
             let maxDate = null;
             let latestDateStr = "";
             
             shots.forEach(shot => {
                 let val = (shot[columnName] || "").trim().toLowerCase();
-                if (val === 'done' || val === 'approved' || val === 'ready' || val === 'cleared') done++;
-                else if (val === 'wip' || val === 'in progress' || val === 'progress') wip++;
-                else if (val === 'rework' || val === 'feedback') rew++;
+                
+                if (val === 'not required' || val === 'n/a' || val === 'na') {
+                    notReq++;
+                    done++; // Treat as done mathematically
+                } else if (val === 'done' || val === 'approved' || val === 'ready' || val === 'cleared') {
+                    done++;
+                } else if (val === 'wip' || val === 'in progress' || val === 'progress') {
+                    wip++;
+                } else if (val === 'rework' || val === 'feedback') {
+                    rew++;
+                }
 
                 if (dateColumnName && shot[dateColumnName]) {
                     let dStr = shot[dateColumnName].trim();
@@ -390,6 +435,11 @@
             let statusText = "";
             let badgeClass = "";
             let pureStatus = "pending";
+
+            if (notReq === total && total > 0) {
+                // If everything is not required, display NA
+                return `<span class="status-badge status-na">N/A</span>`;
+            }
             
             if (done === total && total > 0) {
                 statusText = isGate ? "✔ READY" : "DONE";
@@ -471,9 +521,17 @@
 
         function renderScenesTable() {
             let sortedArray = [...window.globalScenesArray];
+            let mode = window.currentSortMode;
 
-            if (window.isSortedByReadiness) sortedArray.sort((a, b) => b.score - a.score);
-            else sortedArray.sort((a, b) => a.originalOrder - b.originalOrder);
+            if (mode === 'date') {
+                sortedArray.sort((a, b) => a.completionTs - b.completionTs);
+            } else if (mode === 'readiness') {
+                sortedArray.sort((a, b) => b.readinessScore - a.readinessScore);
+            } else if (mode === 'progress') {
+                sortedArray.sort((a, b) => b.progressScore - a.progressScore);
+            } else {
+                sortedArray.sort((a, b) => a.originalOrder - b.originalOrder);
+            }
 
             let scenesHtml = "";
             sortedArray.forEach(s => {
@@ -483,6 +541,8 @@
                 scenesHtml += `
                 <tr class="parent-row" onclick="toggleShots('${s.sceneId}')">
                     <td><strong>Scene - ${scNum}: ${s.sceneRow['Scene Name'] || ""}</strong> ${expandBtn}</td>
+                    <td class="desc-col">${s.sceneRow['Scene Description'] || "-"}</td>
+                    <td><strong>${s.sceneRow['Scene Duration'] || "-"}</strong></td>
                     <td class="col-overall-status">${getBadgeHTML(s.sceneRow['scene Status'] || s.sceneRow['Scene Status'], null, false, true)}</td>
                     <td>${getBadgeHTML(s.sceneRow['Storyboard'], s.sceneRow['Storyboard Date'])}</td>
                     <td>${getBadgeHTML(s.sceneRow['World'], s.sceneRow['World Date'])}</td>
@@ -498,6 +558,8 @@
                     scenesHtml += `
                     <tr class="shot-row ${s.sceneId}">
                         <td class="shot-indent">Shot ${shNum}</td>
+                        <td class="desc-col" style="color:#adb5bd;">${shot['Scene Description'] || "-"}</td>
+                        <td style="color:#adb5bd;">${shot['Scene Duration'] || "-"}</td>
                         <td class="col-overall-status" style="color:#adb5bd;">-</td>
                         <td><span style="color:#adb5bd;">-</span></td>
                         <td><span style="color:#adb5bd;">-</span></td>
@@ -509,7 +571,7 @@
                     </tr>`;
                 });
             });
-            document.getElementById('tableBody').innerHTML = scenesHtml || "<tr><td colspan='9'>No data found.</td></tr>";
+            document.getElementById('tableBody').innerHTML = scenesHtml || "<tr><td colspan='11'>No data found.</td></tr>";
         }
 
         // ==========================================
@@ -522,7 +584,6 @@
                 return;
             }
 
-            // Extract all dates horizontally
             let dates = [];
             let headerRow = rawData[0];
             for (let c = 2; c < headerRow.length; c += 3) {
@@ -544,7 +605,6 @@
 
                 if (!col0 && !col1) continue; 
 
-                // Detect Department or Sub-department Rows (Col 1 is empty)
                 if (col0 && !col1) {
                     let isSub = ["Arts", "2D", "3D", "COMP", "VIDGEN"].includes(col0);
                     if (isSub) {
@@ -556,7 +616,6 @@
                     continue;
                 }
 
-                // Detect Artist Row
                 if (col0 && col1) {
                     let artistName = col0;
                     let role = col1;
@@ -607,7 +666,6 @@
                 }
             }
 
-            // GROUP BY DEPARTMENT
             let depts = {};
             Object.values(members).forEach(m => {
                 if (!depts[m.dept]) depts[m.dept] = [];
@@ -618,14 +676,12 @@
             let memberCount = 0;
 
             Object.keys(depts).forEach(deptName => {
-                
-                // Construct Department Block
                 teamHtml += `
                 <div style="margin-bottom: 25px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0;">
                         <h3 style="margin: 0; color: #0f172a; font-size: 16px; font-weight: bold;">🏢 ${deptName}</h3>
                     </div>
-                    <table style="width: 100%; border-collapse: collapse; margin: 0;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 0; min-width:100%;">
                         <thead style="background-color: #ffffff;">
                             <tr>
                                 <th style="width: 250px; padding: 10px 20px; text-align: left; font-size: 11px; color: #64748b; border-bottom: 1px solid #f1f5f9;">Member / Role</th>
@@ -660,7 +716,6 @@
                         }
                     });
 
-                    // Current Active Task Logic
                     let activeTask = allTasks.find(t => {
                         let s = t.latestStatus.toLowerCase();
                         return s === 'wip' || s === 'progress' || s === 'feedback' || s === 'rework' || t.isConcerning;
@@ -690,7 +745,6 @@
 
                     let expandBtn = `<button class="expand-btn" onclick="event.stopPropagation(); toggleTeamHistory('${m.safeId}')">Past Assignments ▼</button>`;
 
-                    // ARTIST MAIN ROW
                     teamHtml += `
                     <tr class="parent-row" onclick="toggleTeamHistory('${m.safeId}')">
                         <td style="text-align:left; padding-left: 20px;">
@@ -708,11 +762,10 @@
                         <td style="text-align:center;">${healthUI}</td>
                     </tr>`;
 
-                    // ARTIST HISTORY DROPDOWN
                     if (allTasks.length > 0) {
                         let historyHtml = `<tr class="shot-row ${m.safeId}"><td colspan="5" style="padding: 15px 25px; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">`;
                         historyHtml += `<h4 style="margin:0 0 10px 0; color:#475569; font-size: 13px;">Complete Timeline for ${m.name}</h4>`;
-                        historyHtml += `<table style="background:white; width:100%; border:1px solid #cbd5e1; border-radius:6px; border-collapse: collapse;">
+                        historyHtml += `<table style="background:white; width:100%; border:1px solid #cbd5e1; border-radius:6px; border-collapse: collapse; min-width: 100%;">
                                             <tr style="background:#f1f5f9;">
                                                 <th style="width:120px; padding:6px 10px; font-size:11px; text-align:left; border-bottom: 1px solid #cbd5e1;">Date</th>
                                                 <th style="padding:6px 10px; font-size:11px; text-align:left; border-bottom: 1px solid #cbd5e1;">Task Description</th>
@@ -734,7 +787,6 @@
                             });
                         });
 
-                        // Sort chronologically (Past to Future)
                         flatHistory.sort((a, b) => new Date(a.dateStr.replace("'", " 20")) - new Date(b.dateStr.replace("'", " 20")));
 
                         flatHistory.forEach(h => {
@@ -752,7 +804,6 @@
                     }
                     memberCount++;
                 });
-
                 teamHtml += `</tbody></table></div>`;
             });
 
@@ -819,6 +870,7 @@
                         <td><span style="font-size: 11px; color:${catColor}; font-weight: bold;">${row['Category'] || "-"}</span></td>
                         <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
                         <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
+                        <td>${getBadgeHTML(row['Sketches'], row['Sketches Date'])}</td>
                         <td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'])}</td>
                         <td>${getBadgeHTML(row['3D Scaling'], row['3D Scaling Date'])}</td>
                         <td>${getBadgeHTML(row['3D Details'], row['3D Details Date'])}</td>
@@ -836,7 +888,7 @@
                         else if (isRew) sceneWorldMap[scId].rew++;
                     });
                 });
-                document.getElementById('locationsTableBody').innerHTML = locHtml || "<tr><td colspan='8'>No data found in Locations tab.</td></tr>";
+                document.getElementById('locationsTableBody').innerHTML = locHtml || "<tr><td colspan='9'>No data found in Locations tab.</td></tr>";
 
                 let assetsHtml = "";
                 assetsData.forEach(row => {
@@ -852,16 +904,18 @@
                         <td>${getBadgeHTML(row['AI Asset'], row['AI Asset Date'])}</td>
                         <td>${getBadgeHTML(row['3D Outsourced'], row['3D Outsourced Date'])}</td>
                         <td>${getBadgeHTML(row['3D Asset Ready'], row['3D Asset Ready Date'], true)}</td>
+                        <td>${getBadgeHTML(row['Casting'], row['Casting Date'])}</td>
                     </tr>`;
                 });
-                document.getElementById('assetsTableBody').innerHTML = assetsHtml || "<tr><td colspan='8'>No data found in Assets tab.</td></tr>";
+                document.getElementById('assetsTableBody').innerHTML = assetsHtml || "<tr><td colspan='9'>No data found in Assets tab.</td></tr>";
 
                 let scenesMap = {}; let currentSceneId = null;
                 let counts = {
-                    sc: { done: 0, wip: 0, rew: 0 }, sb: { done: 0 }, 
+                    sb: { done: 0, wip: 0 }, 
+                    sc: { done: 0, wip: 0, rew: 0 }, 
                     st: { done: 0, wip: 0, rew: 0 }, mo: { done: 0, wip: 0, rew: 0 },
-                    st_sc: { done: 0 }, mo_sc: { done: 0 },
-                    mc: { done: 0 }, rc: { done: 0, wip: 0, rew: 0 }
+                    st_sc: { done: 0, wip: 0, rew: 0 }, mo_sc: { done: 0, wip: 0, rew: 0 },
+                    mc: { done: 0, wip: 0, rew: 0 }, rc: { done: 0, wip: 0, rew: 0 }
                 };
                 let totalScenes = 0, totalShots = 0;
 
@@ -889,8 +943,16 @@
                         if(scStat === 'locked') counts.sc.done++;
                         if(scStat === 'in prod') counts.sc.wip++;
                         if(scStat === 'in prep') counts.sc.rew++;
-                        if((row['Storyboard']||'').toLowerCase() === 'done') counts.sb.done++;
-                        if((row['MoCap']||'').toLowerCase() === 'done') counts.mc.done++;
+                        
+                        let sbStat = (row['Storyboard']||'').toLowerCase();
+                        if(sbStat === 'done') counts.sb.done++;
+                        else if(sbStat === 'wip' || sbStat === 'progress') counts.sb.wip++;
+                        
+                        let mcStat = (row['MoCap']||'').toLowerCase();
+                        if (mcStat === 'done' || mcStat === 'not required' || mcStat === 'n/a' || mcStat === 'na') counts.mc.done++;
+                        else if (mcStat === 'wip' || mcStat === 'progress') counts.mc.wip++;
+                        else if (mcStat === 'rework' || mcStat === 'feedback') counts.mc.rew++;
+
                     } else {
                         if (!scenesMap[currentSceneId].sceneRow) scenesMap[currentSceneId].sceneRow = row;
                         scenesMap[currentSceneId].shots.push(row);
@@ -901,44 +963,91 @@
                         let rLow = (row['Recompositing'] || "").toLowerCase();
 
                         if(sLow === 'done' || sLow === 'approved') counts.st.done++;
-                        if(sLow === 'wip' || sLow === 'in progress') counts.st.wip++;
-                        if(sLow === 'rework' || sLow === 'feedback') counts.st.rew++;
+                        else if(sLow === 'wip' || sLow === 'in progress') counts.st.wip++;
+                        else if(sLow === 'rework' || sLow === 'feedback') counts.st.rew++;
 
                         if(mLow === 'done' || mLow === 'approved') counts.mo.done++;
-                        if(mLow === 'wip' || mLow === 'in progress') counts.mo.wip++;
-                        if(mLow === 'rework' || mLow === 'feedback') counts.mo.rew++;
+                        else if(mLow === 'wip' || mLow === 'in progress') counts.mo.wip++;
+                        else if(mLow === 'rework' || mLow === 'feedback') counts.mo.rew++;
 
-                        if(rLow === 'done' || rLow === 'approved') counts.rc.done++;
-                        if(rLow === 'wip' || rLow === 'in progress') counts.rc.wip++;
-                        if(rLow === 'rework' || rLow === 'feedback') counts.rc.rew++;
+                        if(rLow === 'done' || rLow === 'approved' || rLow === 'not required' || rLow === 'n/a' || rLow === 'na') counts.rc.done++;
+                        else if(rLow === 'wip' || rLow === 'in progress') counts.rc.wip++;
+                        else if(rLow === 'rework' || rLow === 'feedback') counts.rc.rew++;
                     }
                 });
 
                 let sceneOrderIdx = 0;
+                let totalStaticDurationSec = 0;
+                let totalVideoGenDurationSec = 0;
+
                 Object.keys(scenesMap).forEach(sceneId => {
                     let s = scenesMap[sceneId];
                     if(!s.sceneRow) return;
 
-                    let stDoneShots = 0, moDoneShots = 0, rcDoneShots = 0;
+                    let stDoneShots = 0, stWipShots = 0, stRewShots = 0;
+                    let moDoneShots = 0, moWipShots = 0, moRewShots = 0;
+                    let rcDoneShots = 0;
+                    let assetsDoneShots = 0;
+                    let maxRcDateTs = 0;
+                    let validDateFound = false;
+
                     if(s.shots.length > 0) {
                         s.shots.forEach(shot => {
                             let st = (shot['Statics'] || "").toLowerCase();
                             let mo = (shot['Motion'] || "").toLowerCase();
                             let rc = (shot['Recompositing'] || "").toLowerCase();
+                            let as = (shot['3D Assets'] || "").toLowerCase();
+                            
                             if (st === 'done' || st === 'approved') stDoneShots++;
+                            else if (st === 'wip' || st === 'progress') stWipShots++;
+                            else if (st === 'rework' || st === 'feedback') stRewShots++;
+
                             if (mo === 'done' || mo === 'approved') moDoneShots++;
-                            if (rc === 'done' || rc === 'approved') rcDoneShots++;
+                            else if (mo === 'wip' || mo === 'progress') moWipShots++;
+                            else if (mo === 'rework' || mo === 'feedback') moRewShots++;
+
+                            if (rc === 'done' || rc === 'approved' || rc === 'not required' || rc === 'n/a' || rc === 'na') rcDoneShots++;
+                            if (as === 'done' || as === 'approved' || as === 'ready' || as === 'cleared') assetsDoneShots++;
+
+                            let rcD = shot['Recompositing Date'] || "";
+                            if(rcD) {
+                                let ts = new Date(rcD).getTime();
+                                if(!isNaN(ts) && ts > maxRcDateTs) {
+                                    maxRcDateTs = ts;
+                                    validDateFound = true;
+                                }
+                            }
                         });
-                        if (stDoneShots === s.shots.length) counts.st_sc.done++;
-                        if (moDoneShots === s.shots.length) counts.mo_sc.done++;
+                        
+                        // Statics Scene Level Array
+                        if (stRewShots > 0) counts.st_sc.rew++;
+                        else if (stDoneShots === s.shots.length) {
+                            counts.st_sc.done++;
+                            totalStaticDurationSec += parseDurationToSeconds(s.sceneRow['Scene Duration']);
+                        } else if (stDoneShots > 0 || stWipShots > 0) counts.st_sc.wip++;
+
+                        // Motion Scene Level Array
+                        if (moRewShots > 0) counts.mo_sc.rew++;
+                        else if (moDoneShots === s.shots.length) {
+                            counts.mo_sc.done++;
+                            totalVideoGenDurationSec += parseDurationToSeconds(s.sceneRow['Scene Duration']);
+                        } else if (moDoneShots > 0 || moWipShots > 0) counts.mo_sc.wip++;
+                    }
+
+                    if(!validDateFound && s.sceneRow['Recompositing Date']) {
+                        let ts = new Date(s.sceneRow['Recompositing Date']).getTime();
+                        if(!isNaN(ts)) { maxRcDateTs = ts; validDateFound = true; }
                     }
 
                     let totalS = s.shots.length || 1;
                     let sbDone = (s.sceneRow['Storyboard']||'').toLowerCase() === 'done';
-                    let mcDone = (s.sceneRow['MoCap']||'').toLowerCase() === 'done';
+                    let mcDone = (s.sceneRow['MoCap']||'').toLowerCase() === 'done' || (s.sceneRow['MoCap']||'').toLowerCase() === 'not required';
                     let wdDone = (s.sceneRow['World']||'').toLowerCase() === 'done';
 
-                    s.score = (sbDone ? 10 : 0) + (wdDone ? 10 : 0) + (mcDone ? 10 : 0) + ((stDoneShots/totalS)*20) + ((moDoneShots/totalS)*20) + ((rcDoneShots/totalS)*30);
+                    s.completionTs = validDateFound ? maxRcDateTs : Infinity;
+                    s.readinessScore = (sbDone ? 30 : 0) + (wdDone ? 30 : 0) + ((assetsDoneShots/totalS) * 40);
+                    s.progressScore = ((rcDoneShots/totalS) * 1000) + (mcDone ? 500 : 0) + ((moDoneShots/totalS) * 100) + ((stDoneShots/totalS) * 10);
+                    
                     s.sceneId = sceneId;
                     s.originalOrder = sceneOrderIdx++;
 
@@ -951,53 +1060,60 @@
                 let finalTotalShots = Math.max(totalShots, 3120);
                 let finalTotalLocs = Math.max(totalLocations, 1);
 
-                let req = {
-                    sb: Math.round(finalTotalScenes * scheduleProgress),
-                    wd: Math.round(finalTotalLocs * scheduleProgress),
-                    st: Math.round(finalTotalShots * scheduleProgress),
-                    mo: Math.round(finalTotalShots * scheduleProgress),
-                    mc: Math.round(finalTotalScenes * scheduleProgress),
-                    rc: Math.round(finalTotalShots * compProgress) 
-                };
-
-                document.getElementById('card-sc').innerText = `${counts.sc.done} / ${finalTotalScenes}`;
-                document.getElementById('mini-sc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.sc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.sc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.sc.rew}</span>`;
+                // --- Update UI Cards ---
                 
+                // Storyboard
                 document.getElementById('card-sb').innerText = `${counts.sb.done} / ${finalTotalScenes}`;
-                document.getElementById('target-sb').innerHTML = `Req: ${req.sb} | ${getStatusText(counts.sb.done, req.sb)}`;
-                
+                document.getElementById('mini-sb').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.sb.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.sb.wip}</span>`;
+
+                // World
                 document.getElementById('card-wd').innerText = `${locationsDone} / ${finalTotalLocs}`;
-                document.getElementById('target-wd').innerHTML = `Req: ${req.wd} | ${getStatusText(locationsDone, req.wd)}`;
-
-                document.getElementById('card-st-sc').innerText = `${counts.st_sc.done} / ${finalTotalScenes}`;
-                document.getElementById('card-mo-sc').innerText = `${counts.mo_sc.done} / ${finalTotalScenes}`;
-
-                document.getElementById('card-st').innerText = `${counts.st.done} / ${finalTotalShots}`;
-                document.getElementById('target-st').innerHTML = `Req: ${req.st} | ${getStatusText(counts.st.done, req.st)}`;
-                document.getElementById('mini-st').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.st.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.st.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.st.rew}</span>`;
                 
+                // Statics Scenes
+                document.getElementById('card-st-sc').innerText = `${counts.st_sc.done} / ${finalTotalScenes}`;
+                document.getElementById('mini-st-sc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.st_sc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.st_sc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.st_sc.rew}</span>`;
+
+                // Statics Shots
+                document.getElementById('card-st').innerText = `${counts.st.done} / ${finalTotalShots}`;
+                document.getElementById('mini-st').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.st.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.st.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.st.rew}</span>`;
+
+                // Statics Duration
+                document.getElementById('card-st-dur').innerText = formatDuration(totalStaticDurationSec);
+
+                // Video Gen Scenes
+                document.getElementById('card-mo-sc').innerText = `${counts.mo_sc.done} / ${finalTotalScenes}`;
+                document.getElementById('mini-mo-sc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.mo_sc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.mo_sc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.mo_sc.rew}</span>`;
+
+                // Video Gen Shots
                 document.getElementById('card-mo').innerText = `${counts.mo.done} / ${finalTotalShots}`;
-                document.getElementById('target-mo').innerHTML = `Req: ${req.mo} | ${getStatusText(counts.mo.done, req.mo)}`;
                 document.getElementById('mini-mo').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.mo.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.mo.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.mo.rew}</span>`;
                 
+                // Video Gen Duration
+                document.getElementById('card-mo-dur').innerText = formatDuration(totalVideoGenDurationSec);
+
+                // MoCap Shoot
                 document.getElementById('card-mc').innerText = `${counts.mc.done} / ${finalTotalScenes}`;
-                document.getElementById('target-mc').innerHTML = `Req: ${req.mc} | ${getStatusText(counts.mc.done, req.mc)}`;
+                document.getElementById('mini-mc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.mc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.mc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.mc.rew}</span>`;
                 
+                // Recompositing
                 document.getElementById('card-rc').innerText = `${counts.rc.done} / ${finalTotalShots}`;
-                if (today < compStartDate) {
-                    document.getElementById('target-rc').innerHTML = `<span style="color:#2E5C2E;">Starts Mar 7</span>`;
-                } else {
-                    document.getElementById('target-rc').innerHTML = `Req: ${req.rc} | ${getStatusText(counts.rc.done, req.rc)}`;
-                }
                 document.getElementById('mini-rc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.rc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.rc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.rc.rew}</span>`;
 
-                window.pipelineChart.data.datasets[0].data = [req.sb, req.wd, req.st, req.mo, req.mc, req.rc];
+                // Update Chart
+                let req_sb = Math.round(finalTotalScenes * scheduleProgress);
+                let req_wd = Math.round(finalTotalLocs * scheduleProgress);
+                let req_st = Math.round(finalTotalShots * scheduleProgress);
+                let req_mo = Math.round(finalTotalShots * scheduleProgress);
+                let req_mc = Math.round(finalTotalScenes * scheduleProgress);
+                let req_rc = Math.round(finalTotalShots * compProgress);
+
+                window.pipelineChart.data.datasets[0].data = [req_sb, req_wd, req_st, req_mo, req_mc, req_rc];
                 window.pipelineChart.data.datasets[1].data = [counts.sb.done, locationsDone, counts.st.done, counts.mo.done, counts.mc.done, counts.rc.done];
                 window.pipelineChart.update();
 
             } catch (error) {
                 console.error("Error building dashboard:", error);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan='9' style='color:red;'>Error loading data: Ensure all Google Sheets links are valid CSV exports.</td></tr>`;
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan='11' style='color:red;text-align:center;'>Error loading data: Ensure all Google Sheets links are valid CSV exports.</td></tr>`;
             }
         }
 
