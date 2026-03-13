@@ -404,6 +404,13 @@
             return `${s}s`;
         }
 
+        function getStatusText(doneCount, requiredCount) {
+            if (requiredCount === 0 && doneCount === 0) return `<span style="color:#7A7A00;">On Track</span>`;
+            if (doneCount > requiredCount) return `<span style="color:#2E5C2E;">Ahead</span>`;
+            if (doneCount < requiredCount) return `<span style="color:#C23B22;">Behind</span>`;
+            return `<span style="color:#7A7A00;">On Track</span>`;
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
@@ -1248,6 +1255,30 @@
 
                     let sceneDurSecs = parseDurationToSeconds(String(s.sceneRow['Scene Duration'] || "0"));
 
+                    // 🟢 INDEPENDENT SCENE LEVEL DURATION TRACKING (STRICTLY FROM SCENE ROW)
+                    let stScLow = String(s.sceneRow['Statics'] || "").toLowerCase();
+                    if(stScLow === 'done' || stScLow === 'approved' || stScLow === 'ready' || stScLow === 'cleared') { 
+                        counts.st_sc.done++; dur.st.done += sceneDurSecs; 
+                    }
+                    else if(stScLow === 'wip' || stScLow === 'progress' || stScLow === 'in progress') { 
+                        counts.st_sc.wip++; dur.st.wip += sceneDurSecs; 
+                    }
+                    else if(stScLow === 'rework' || stScLow === 'feedback') { 
+                        counts.st_sc.rew++; dur.st.rew += sceneDurSecs; 
+                    }
+
+                    let moScLow = String(s.sceneRow['Motion'] || "").toLowerCase();
+                    if(moScLow === 'done' || moScLow === 'approved' || moScLow === 'ready' || moScLow === 'cleared') { 
+                        counts.mo_sc.done++; dur.mo.done += sceneDurSecs; 
+                    }
+                    else if(moScLow === 'wip' || moScLow === 'progress' || moScLow === 'in progress') { 
+                        counts.mo_sc.wip++; dur.mo.wip += sceneDurSecs; 
+                    }
+                    else if(moScLow === 'rework' || moScLow === 'feedback') { 
+                        counts.mo_sc.rew++; dur.mo.rew += sceneDurSecs; 
+                    }
+
+                    // 🟢 SHOT-LEVEL DATA (ONLY for Pipeline Sorting and Progress Scores, NOT Duration)
                     let stDoneShots = 0, stWipShots = 0, stRewShots = 0;
                     let moDoneShots = 0, moWipShots = 0, moRewShots = 0;
                     let rcDoneShots = 0;
@@ -1277,7 +1308,6 @@
                             if (rc === 'done' || rc === 'approved' || rc === 'not required' || rc === 'n/a' || rc === 'na') rcDoneShots++;
                             if (as === 'done' || as === 'approved' || as === 'ready' || as === 'cleared') assetsDoneShots++;
 
-                            // Dates tracking
                             let rcD = shot['Recompositing Date'] || "";
                             if(rcD) {
                                 let ts = new Date(rcD).getTime();
@@ -1290,39 +1320,10 @@
                                 if(!isNaN(tsMo) && tsMo > maxMoDateTs) { maxMoDateTs = tsMo; validMoDateFound = true; }
                             }
                         });
-                        
-                        if (stRewShots > 0) {
-                            counts.st_sc.rew++;
-                            dur.st.rew += sceneDurSecs;
-                        } else if (stDoneShots === s.shots.length) {
-                            counts.st_sc.done++;
-                            dur.st.done += sceneDurSecs;
-                        } else if (stDoneShots > 0 || stWipShots > 0) {
-                            counts.st_sc.wip++;
-                            dur.st.wip += sceneDurSecs;
-                        }
-
-                        if (moRewShots > 0) {
-                            counts.mo_sc.rew++;
-                            dur.mo.rew += sceneDurSecs;
-                        } else if (moDoneShots === s.shots.length) {
-                            counts.mo_sc.done++;
-                            dur.mo.done += sceneDurSecs;
-                        } else if (moDoneShots > 0 || moWipShots > 0) {
-                            counts.mo_sc.wip++;
-                            dur.mo.wip += sceneDurSecs;
-                        }
-
                     } else {
-                        let stLow = String(s.sceneRow['Statics'] || "").toLowerCase();
-                        if(stLow === 'done' || stLow === 'approved') { counts.st_sc.done++; dur.st.done += sceneDurSecs; }
-                        else if(stLow === 'wip' || stLow === 'in progress') { counts.st_sc.wip++; dur.st.wip += sceneDurSecs; }
-                        else if(stLow === 'rework' || stLow === 'feedback') { counts.st_sc.rew++; dur.st.rew += sceneDurSecs; }
-
-                        let moLow = String(s.sceneRow['Motion'] || "").toLowerCase();
-                        if(moLow === 'done' || moLow === 'approved') { counts.mo_sc.done++; dur.mo.done += sceneDurSecs; moDoneShots++; }
-                        else if(moLow === 'wip' || moLow === 'in progress') { counts.mo_sc.wip++; dur.mo.wip += sceneDurSecs; }
-                        else if(moLow === 'rework' || moLow === 'feedback') { counts.mo_sc.rew++; dur.mo.rew += sceneDurSecs; }
+                        // Fallback for sorting logic if no shots exist
+                        if(stScLow === 'done' || stScLow === 'approved') stDoneShots++;
+                        if(moScLow === 'done' || moScLow === 'approved') moDoneShots++;
                     }
 
                     if(!validRcDateFound && s.sceneRow['Recompositing Date']) {
