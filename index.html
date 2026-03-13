@@ -20,6 +20,10 @@
         .card .number { font-size: 22px; font-weight: bold; color: #2c3e50; margin: 5px 0;}
         .card .target { font-size: 11px; color: #888; font-weight: bold; margin-bottom: 8px;}
         
+        /* Highlighted Cards CSS */
+        .card-highlight-st { background-color: #fffff4; border: 2px solid #e5e500; box-shadow: 0 4px 12px rgba(229, 229, 0, 0.2) !important; border-top-width: 4px; border-top-color: #e5e500; }
+        .card-highlight-mo { background-color: #f0f8ff; border: 2px solid #5fa8d3; box-shadow: 0 4px 12px rgba(95, 168, 211, 0.2) !important; border-top-width: 4px; border-top-color: #5fa8d3; }
+
         .mini-stats { display: flex; justify-content: center; gap: 4px; font-size: 11px; font-weight: bold; margin-top: auto; flex-wrap: wrap;}
         .stat-pill { padding: 3px 5px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .pill-appr { background: #C1E1C1; color: #2E5C2E; }
@@ -130,10 +134,11 @@
             <div class="number" id="card-st">0 / 3120</div>
             <div class="mini-stats" id="mini-st"></div>
         </div>
-        <div class="card" style="border-top-color: #FDFD96; background-color: #fffff8;">
+        <div class="card card-highlight-st">
             <h3>Static Duration</h3>
             <div class="number" id="card-st-dur" style="color: #7A7A00;">0m</div>
             <div class="target">Out of 120 Mins</div>
+            <div class="mini-stats" id="mini-st-dur"></div>
         </div>
 
         <div class="card" style="border-top-color: #B4E1FF;">
@@ -146,10 +151,11 @@
             <div class="number" id="card-mo">0 / 3120</div>
             <div class="mini-stats" id="mini-mo"></div>
         </div>
-        <div class="card" style="border-top-color: #B4E1FF; background-color: #f0f8ff;">
+        <div class="card card-highlight-mo">
             <h3>Video Gen Duration</h3>
             <div class="number" id="card-mo-dur" style="color: #2c5282;">0m</div>
             <div class="target">Out of 120 Mins</div>
+            <div class="mini-stats" id="mini-mo-dur"></div>
         </div>
         <div class="card" style="border-top-color: #C1E1C1;">
             <h3>MoCap Shoot</h3>
@@ -284,24 +290,50 @@
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
         
-        // Duration Helper Functions
-        function parseDurationToSeconds(val) {
+        // ==========================================
+        // 🟢 UPDATED: ACCURATE MINUTE PARSING
+        // ==========================================
+        function parseDurationToMinutes(val) {
             if(!val) return 0;
             let str = String(val).toLowerCase().trim();
+            
+            // Format 1:30 or 01:30
             if (str.includes(":")) {
                 let parts = str.split(":");
-                return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
+                return (parseInt(parts[0]) || 0) + ((parseInt(parts[1]) || 0) / 60);
             }
+            
+            // Format 1m 30s
+            if (str.includes("m") || str.includes("s")) {
+                let mins = 0, secs = 0;
+                let mMatch = str.match(/(\d+)\s*m/);
+                if(mMatch) mins = parseInt(mMatch[1]);
+                let sMatch = str.match(/(\d+)\s*s/);
+                if(sMatch) secs = parseInt(sMatch[1]);
+                return mins + (secs / 60);
+            }
+            
+            // Plain numbers (We assume user is typing Minutes, e.g., '2' or '2.5')
             let num = parseFloat(str.replace(/[^0-9.]/g, ''));
             return isNaN(num) ? 0 : num; 
         }
 
-        function formatDuration(totalSec) {
-            if (totalSec === 0) return "0m";
-            let m = Math.floor(totalSec / 60);
-            let s = Math.floor(totalSec % 60);
+        function formatDuration(totalMins) {
+            if (totalMins === 0) return "0m";
+            let m = Math.floor(totalMins);
+            let s = Math.round((totalMins - m) * 60);
+            
+            // Clean up 60 seconds rolling into an extra minute
+            if (s === 60) { m += 1; s = 0; }
             if (s > 0) return `${m}m ${s}s`;
             return `${m}m`;
+        }
+
+        function getStatusText(doneCount, requiredCount) {
+            if (requiredCount === 0 && doneCount === 0) return `<span style="color:#7A7A00;">On Track</span>`;
+            if (doneCount > requiredCount) return `<span style="color:#2E5C2E;">Ahead</span>`;
+            if (doneCount < requiredCount) return `<span style="color:#C23B22;">Behind</span>`;
+            return `<span style="color:#7A7A00;">On Track</span>`;
         }
 
         function switchTab(tabId) {
@@ -368,7 +400,6 @@
             let text = (status || "").trim();
             let lower = text.toLowerCase();
 
-            // Handle Not Required explicitly
             if (lower === 'not required' || lower === 'n/a' || lower === 'na') {
                 return `<span class="status-badge status-na">N/A</span>`;
             }
@@ -412,7 +443,7 @@
                 
                 if (val === 'not required' || val === 'n/a' || val === 'na') {
                     notReq++;
-                    done++; // Treat as done mathematically
+                    done++; 
                 } else if (val === 'done' || val === 'approved' || val === 'ready' || val === 'cleared') {
                     done++;
                 } else if (val === 'wip' || val === 'in progress' || val === 'progress') {
@@ -437,7 +468,6 @@
             let pureStatus = "pending";
 
             if (notReq === total && total > 0) {
-                // If everything is not required, display NA
                 return `<span class="status-badge status-na">N/A</span>`;
             }
             
@@ -523,15 +553,10 @@
             let sortedArray = [...window.globalScenesArray];
             let mode = window.currentSortMode;
 
-            if (mode === 'date') {
-                sortedArray.sort((a, b) => a.completionTs - b.completionTs);
-            } else if (mode === 'readiness') {
-                sortedArray.sort((a, b) => b.readinessScore - a.readinessScore);
-            } else if (mode === 'progress') {
-                sortedArray.sort((a, b) => b.progressScore - a.progressScore);
-            } else {
-                sortedArray.sort((a, b) => a.originalOrder - b.originalOrder);
-            }
+            if (mode === 'date') sortedArray.sort((a, b) => a.completionTs - b.completionTs);
+            else if (mode === 'readiness') sortedArray.sort((a, b) => b.readinessScore - a.readinessScore);
+            else if (mode === 'progress') sortedArray.sort((a, b) => b.progressScore - a.progressScore);
+            else sortedArray.sort((a, b) => a.originalOrder - b.originalOrder);
 
             let scenesHtml = "";
             sortedArray.forEach(s => {
@@ -851,7 +876,8 @@
                     document.getElementById('timeline-text').innerText = `Production officially begins March 3rd!`;
                 }
 
-                let locationsDone = 0; let totalLocations = 0; let sceneWorldMap = {}; let locHtml = "";
+                let locStatsTracker = { done: 0, wip: 0, rew: 0 };
+                let totalLocations = 0; let sceneWorldMap = {}; let locHtml = "";
                 locationsData.forEach(row => {
                     if(!row['World Name']) return;
                     totalLocations++;
@@ -860,7 +886,10 @@
                     let isWip = status === 'wip' || status === 'progress' || status === 'in progress';
                     let isRew = status === 'rework' || status === 'feedback';
 
-                    if (isDone) locationsDone++;
+                    if (isDone) locStatsTracker.done++;
+                    else if (isWip) locStatsTracker.wip++;
+                    else if (isRew) locStatsTracker.rew++;
+                    
                     updatePieChart(row['AI Asset']);
 
                     let catColor = (row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
@@ -910,13 +939,20 @@
                 document.getElementById('assetsTableBody').innerHTML = assetsHtml || "<tr><td colspan='9'>No data found in Assets tab.</td></tr>";
 
                 let scenesMap = {}; let currentSceneId = null;
+                
+                // Track objects
                 let counts = {
                     sb: { done: 0, wip: 0 }, 
                     sc: { done: 0, wip: 0, rew: 0 }, 
                     st: { done: 0, wip: 0, rew: 0 }, mo: { done: 0, wip: 0, rew: 0 },
                     st_sc: { done: 0, wip: 0, rew: 0 }, mo_sc: { done: 0, wip: 0, rew: 0 },
-                    mc: { done: 0, wip: 0, rew: 0 }, rc: { done: 0, wip: 0, rew: 0 }
+                    mc: { done: 0, wip: 0, rew: 0, notReq: 0 }, rc: { done: 0, wip: 0, rew: 0, notReq: 0 }
                 };
+                let dur = {
+                    st: { done: 0, wip: 0, rew: 0 },
+                    mo: { done: 0, wip: 0, rew: 0 }
+                };
+
                 let totalScenes = 0, totalShots = 0;
 
                 scenesData.forEach(row => {
@@ -949,7 +985,8 @@
                         else if(sbStat === 'wip' || sbStat === 'progress') counts.sb.wip++;
                         
                         let mcStat = (row['MoCap']||'').toLowerCase();
-                        if (mcStat === 'done' || mcStat === 'not required' || mcStat === 'n/a' || mcStat === 'na') counts.mc.done++;
+                        if (mcStat === 'done' || mcStat === 'approved' || mcStat === 'ready') counts.mc.done++;
+                        else if (mcStat === 'not required' || mcStat === 'n/a' || mcStat === 'na') { counts.mc.done++; counts.mc.notReq++; }
                         else if (mcStat === 'wip' || mcStat === 'progress') counts.mc.wip++;
                         else if (mcStat === 'rework' || mcStat === 'feedback') counts.mc.rew++;
 
@@ -970,19 +1007,20 @@
                         else if(mLow === 'wip' || mLow === 'in progress') counts.mo.wip++;
                         else if(mLow === 'rework' || mLow === 'feedback') counts.mo.rew++;
 
-                        if(rLow === 'done' || rLow === 'approved' || rLow === 'not required' || rLow === 'n/a' || rLow === 'na') counts.rc.done++;
+                        if(rLow === 'done' || rLow === 'approved') counts.rc.done++;
+                        else if(rLow === 'not required' || rLow === 'n/a' || rLow === 'na') { counts.rc.done++; counts.rc.notReq++; }
                         else if(rLow === 'wip' || rLow === 'in progress') counts.rc.wip++;
                         else if(rLow === 'rework' || rLow === 'feedback') counts.rc.rew++;
                     }
                 });
 
                 let sceneOrderIdx = 0;
-                let totalStaticDurationSec = 0;
-                let totalVideoGenDurationSec = 0;
 
                 Object.keys(scenesMap).forEach(sceneId => {
                     let s = scenesMap[sceneId];
                     if(!s.sceneRow) return;
+
+                    let sceneDurMins = parseDurationToMinutes(s.sceneRow['Scene Duration']);
 
                     let stDoneShots = 0, stWipShots = 0, stRewShots = 0;
                     let moDoneShots = 0, moWipShots = 0, moRewShots = 0;
@@ -999,11 +1037,11 @@
                             let as = (shot['3D Assets'] || "").toLowerCase();
                             
                             if (st === 'done' || st === 'approved') stDoneShots++;
-                            else if (st === 'wip' || st === 'progress') stWipShots++;
+                            else if (st === 'wip' || st === 'progress' || st === 'in progress') stWipShots++;
                             else if (st === 'rework' || st === 'feedback') stRewShots++;
 
                             if (mo === 'done' || mo === 'approved') moDoneShots++;
-                            else if (mo === 'wip' || mo === 'progress') moWipShots++;
+                            else if (mo === 'wip' || mo === 'progress' || mo === 'in progress') moWipShots++;
                             else if (mo === 'rework' || mo === 'feedback') moRewShots++;
 
                             if (rc === 'done' || rc === 'approved' || rc === 'not required' || rc === 'n/a' || rc === 'na') rcDoneShots++;
@@ -1019,19 +1057,41 @@
                             }
                         });
                         
-                        // Statics Scene Level Array
-                        if (stRewShots > 0) counts.st_sc.rew++;
-                        else if (stDoneShots === s.shots.length) {
+                        // Statics Scene Level Arrays & Duration
+                        if (stRewShots > 0) {
+                            counts.st_sc.rew++;
+                            dur.st.rew += sceneDurMins;
+                        } else if (stDoneShots === s.shots.length) {
                             counts.st_sc.done++;
-                            totalStaticDurationSec += parseDurationToSeconds(s.sceneRow['Scene Duration']);
-                        } else if (stDoneShots > 0 || stWipShots > 0) counts.st_sc.wip++;
+                            dur.st.done += sceneDurMins;
+                        } else if (stDoneShots > 0 || stWipShots > 0) {
+                            counts.st_sc.wip++;
+                            dur.st.wip += sceneDurMins;
+                        }
 
-                        // Motion Scene Level Array
-                        if (moRewShots > 0) counts.mo_sc.rew++;
-                        else if (moDoneShots === s.shots.length) {
+                        // Motion Scene Level Arrays & Duration
+                        if (moRewShots > 0) {
+                            counts.mo_sc.rew++;
+                            dur.mo.rew += sceneDurMins;
+                        } else if (moDoneShots === s.shots.length) {
                             counts.mo_sc.done++;
-                            totalVideoGenDurationSec += parseDurationToSeconds(s.sceneRow['Scene Duration']);
-                        } else if (moDoneShots > 0 || moWipShots > 0) counts.mo_sc.wip++;
+                            dur.mo.done += sceneDurMins;
+                        } else if (moDoneShots > 0 || moWipShots > 0) {
+                            counts.mo_sc.wip++;
+                            dur.mo.wip += sceneDurMins;
+                        }
+
+                    } else {
+                        // Fallback if scenes have no shots
+                        let stLow = (s.sceneRow['Statics'] || "").toLowerCase();
+                        if(stLow === 'done' || stLow === 'approved') { counts.st_sc.done++; dur.st.done += sceneDurMins; }
+                        else if(stLow === 'wip' || stLow === 'in progress') { counts.st_sc.wip++; dur.st.wip += sceneDurMins; }
+                        else if(stLow === 'rework' || stLow === 'feedback') { counts.st_sc.rew++; dur.st.rew += sceneDurMins; }
+
+                        let moLow = (s.sceneRow['Motion'] || "").toLowerCase();
+                        if(moLow === 'done' || moLow === 'approved') { counts.mo_sc.done++; dur.mo.done += sceneDurMins; }
+                        else if(moLow === 'wip' || moLow === 'in progress') { counts.mo_sc.wip++; dur.mo.wip += sceneDurMins; }
+                        else if(moLow === 'rework' || moLow === 'feedback') { counts.mo_sc.rew++; dur.mo.rew += sceneDurMins; }
                     }
 
                     if(!validDateFound && s.sceneRow['Recompositing Date']) {
@@ -1060,15 +1120,29 @@
                 let finalTotalShots = Math.max(totalShots, 3120);
                 let finalTotalLocs = Math.max(totalLocations, 1);
 
-                // --- Update UI Cards ---
+                // Adjust required totals based on 'Not Required' exclusions
+                let activeMoCapScenes = finalTotalScenes - counts.mc.notReq;
+                let activeRcShots = finalTotalShots - counts.rc.notReq;
+
+                let req = {
+                    sb: Math.round(finalTotalScenes * scheduleProgress),
+                    wd: Math.round(finalTotalLocs * scheduleProgress),
+                    st: Math.round(finalTotalShots * scheduleProgress),
+                    mo: Math.round(finalTotalShots * scheduleProgress),
+                    mc: Math.round(activeMoCapScenes * scheduleProgress),
+                    rc: Math.round(activeRcShots * compProgress) 
+                };
+
+                // --- ROW 1 UI CARDS ---
                 
                 // Storyboard
                 document.getElementById('card-sb').innerText = `${counts.sb.done} / ${finalTotalScenes}`;
                 document.getElementById('mini-sb').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.sb.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.sb.wip}</span>`;
 
                 // World
-                document.getElementById('card-wd').innerText = `${locationsDone} / ${finalTotalLocs}`;
-                
+                document.getElementById('card-wd').innerText = `${locStatsTracker.done} / ${finalTotalLocs}`;
+                document.getElementById('mini-wd').innerHTML = `<span class="stat-pill pill-appr">✔ ${locStatsTracker.done}</span> <span class="stat-pill pill-wip">⏳ ${locStatsTracker.wip}</span> <span class="stat-pill pill-rew">↻ ${locStatsTracker.rew}</span>`;
+
                 // Statics Scenes
                 document.getElementById('card-st-sc').innerText = `${counts.st_sc.done} / ${finalTotalScenes}`;
                 document.getElementById('mini-st-sc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.st_sc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.st_sc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.st_sc.rew}</span>`;
@@ -1077,8 +1151,11 @@
                 document.getElementById('card-st').innerText = `${counts.st.done} / ${finalTotalShots}`;
                 document.getElementById('mini-st').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.st.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.st.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.st.rew}</span>`;
 
-                // Statics Duration
-                document.getElementById('card-st-dur').innerText = formatDuration(totalStaticDurationSec);
+                // Statics Duration (HIGHLIGHTED)
+                document.getElementById('card-st-dur').innerText = formatDuration(dur.st.done);
+                document.getElementById('mini-st-dur').innerHTML = `<span class="stat-pill pill-appr">✔ ${formatDuration(dur.st.done)}</span> <span class="stat-pill pill-wip">⏳ ${formatDuration(dur.st.wip)}</span> <span class="stat-pill pill-rew">↻ ${formatDuration(dur.st.rew)}</span>`;
+
+                // --- ROW 2 UI CARDS ---
 
                 // Video Gen Scenes
                 document.getElementById('card-mo-sc').innerText = `${counts.mo_sc.done} / ${finalTotalScenes}`;
@@ -1088,27 +1165,28 @@
                 document.getElementById('card-mo').innerText = `${counts.mo.done} / ${finalTotalShots}`;
                 document.getElementById('mini-mo').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.mo.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.mo.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.mo.rew}</span>`;
                 
-                // Video Gen Duration
-                document.getElementById('card-mo-dur').innerText = formatDuration(totalVideoGenDurationSec);
+                // Video Gen Duration (HIGHLIGHTED)
+                document.getElementById('card-mo-dur').innerText = formatDuration(dur.mo.done);
+                document.getElementById('mini-mo-dur').innerHTML = `<span class="stat-pill pill-appr">✔ ${formatDuration(dur.mo.done)}</span> <span class="stat-pill pill-wip">⏳ ${formatDuration(dur.mo.wip)}</span> <span class="stat-pill pill-rew">↻ ${formatDuration(dur.mo.rew)}</span>`;
 
                 // MoCap Shoot
-                document.getElementById('card-mc').innerText = `${counts.mc.done} / ${finalTotalScenes}`;
+                document.getElementById('card-mc').innerText = `${counts.mc.done} / ${activeMoCapScenes}`;
                 document.getElementById('mini-mc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.mc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.mc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.mc.rew}</span>`;
                 
                 // Recompositing
-                document.getElementById('card-rc').innerText = `${counts.rc.done} / ${finalTotalShots}`;
+                document.getElementById('card-rc').innerText = `${counts.rc.done} / ${activeRcShots}`;
                 document.getElementById('mini-rc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.rc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.rc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.rc.rew}</span>`;
 
-                // Update Chart
+                // Update Progress Chart
                 let req_sb = Math.round(finalTotalScenes * scheduleProgress);
                 let req_wd = Math.round(finalTotalLocs * scheduleProgress);
                 let req_st = Math.round(finalTotalShots * scheduleProgress);
                 let req_mo = Math.round(finalTotalShots * scheduleProgress);
-                let req_mc = Math.round(finalTotalScenes * scheduleProgress);
-                let req_rc = Math.round(finalTotalShots * compProgress);
+                let req_mc = Math.round(activeMoCapScenes * scheduleProgress);
+                let req_rc = Math.round(activeRcShots * compProgress);
 
                 window.pipelineChart.data.datasets[0].data = [req_sb, req_wd, req_st, req_mo, req_mc, req_rc];
-                window.pipelineChart.data.datasets[1].data = [counts.sb.done, locationsDone, counts.st.done, counts.mo.done, counts.mc.done, counts.rc.done];
+                window.pipelineChart.data.datasets[1].data = [counts.sb.done, locStatsTracker.done, counts.st.done, counts.mo.done, counts.mc.done, counts.rc.done];
                 window.pipelineChart.update();
 
             } catch (error) {
