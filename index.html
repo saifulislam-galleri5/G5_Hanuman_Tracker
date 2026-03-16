@@ -49,9 +49,8 @@
         .table-container { width: 100%; max-height: 65vh; overflow-y: auto; overflow-x: auto; border: 1px solid #e9ecef; border-radius: 8px; background: white;}
         table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1400px; }
         
-        /* Sticky Header Magic */
         th { position: sticky; top: 0; z-index: 10; background-color: #f8f9fa; color: #495057; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 8px; text-align: center; vertical-align: middle; }
-        th::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; border-bottom: 2px solid #dee2e6; } /* Bottom border for sticky header */
+        th::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; border-bottom: 2px solid #dee2e6; } 
         
         td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #f1f3f5; vertical-align: middle;}
         td:first-child, th:first-child { text-align: left; padding-left: 15px;}
@@ -63,7 +62,7 @@
         /* 🟢 CLICKABLE LINK STYLING */
         .drive-link { color: #0284c7; text-decoration: none; border-bottom: 1px solid transparent; transition: all 0.2s ease; display: inline-block; padding-bottom: 1px; }
         .drive-link:hover { color: #0369a1; border-bottom: 1px solid #0369a1; }
-        .drive-link-icon { font-size: 10px; margin-left: 4px; color: #7dd3fc; }
+        .drive-link-icon { font-size: 11px; margin-left: 4px; color: #38bdf8; font-weight: bold;}
         
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 70px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
         .status-done { background-color: #C1E1C1; color: #2E5C2E; } 
@@ -107,7 +106,7 @@
         .team-bar-fg { height: 100%; background-color: #3b82f6; border-radius: 4px; transition: width 0.5s ease; }
         .team-bar-fg.complete { background-color: #10b981; }
         
-        .history-table th { top: 0; position: static; box-shadow: none; border-bottom: 1px solid #cbd5e1; } /* Inner table override */
+        .history-table th { top: 0; position: static; box-shadow: none; border-bottom: 1px solid #cbd5e1; } 
     </style>
 </head>
 <body>
@@ -380,23 +379,31 @@
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
         
-        // 🟢 DRIVE LINK EXTRACTOR (Looks for column named "Drive Link", "Link", or hunts for a URL)
+        // 🟢 AGGRESSIVE LINK EXTRACTOR (Hunts for URLs in ANY column in the row)
         function extractLink(row) {
             if (row['Drive Link'] && String(row['Drive Link']).trim() !== "") return String(row['Drive Link']).trim();
             if (row['Link'] && String(row['Link']).trim() !== "") return String(row['Link']).trim();
+            if (row['URL'] && String(row['URL']).trim() !== "") return String(row['URL']).trim();
             
-            // Fallback: search all cells in the row for a URL
             let vals = Object.values(row);
+            if (row['__parsed_extra']) {
+                vals = vals.concat(row['__parsed_extra']);
+            }
+            
+            const urlRegex = /(https?:\/\/[^\s]+|drive\.google\.com[^\s]+)/i;
             for (let v of vals) {
+                if (!v) continue;
                 let strVal = String(v).trim();
-                if (strVal.startsWith('http://') || strVal.startsWith('https://') || strVal.includes('drive.google.com')) {
-                    return strVal;
+                let match = strVal.match(urlRegex);
+                if (match) {
+                    let url = match[0];
+                    if (!url.startsWith('http')) url = 'https://' + url;
+                    return url;
                 }
             }
             return null;
         }
 
-        // 🟢 BULLETPROOF DATE PARSER
         function parseCustomDate(dateStr) {
             if (!dateStr) return NaN;
             let s = String(dateStr).trim().replace(/'/g, '');
@@ -729,7 +736,6 @@
                 let catColor = String(row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
                 let urgentAlert = row.isDueThisWeek && sortMode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
 
-                // 🟢 NEW: Extract Drive Link
                 let locLink = extractLink(row);
                 let locNameDisplay = locLink ? `<a href="${locLink}" target="_blank" class="drive-link" title="Open Drive Folder">${worldName} <span class="drive-link-icon">↗</span></a>` : worldName;
 
@@ -779,7 +785,6 @@
             filteredArray.forEach(row => {
                 let urgentAlert = row.isDueThisWeek && sortMode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
 
-                // 🟢 NEW: Extract Drive Link
                 let assetLink = extractLink(row);
                 let assetNameDisplay = assetLink ? `<a href="${assetLink}" target="_blank" class="drive-link" title="Open Drive Folder">${row['Asset Name']} <span class="drive-link-icon">↗</span></a>` : row['Asset Name'];
 
@@ -1154,7 +1159,6 @@
                     
                     row.originalOrder = idx;
                     
-                    // 🟢 N/A OVERRIDE RULE FOR LOCATIONS
                     let scaleStat = String(row['3D Scaling'] || "").toLowerCase();
                     let detailStat = String(row['3D Details'] || "").toLowerCase();
                     let scaleNa = (scaleStat === 'na' || scaleStat === 'n/a' || scaleStat === 'not required');
@@ -1170,12 +1174,11 @@
                         isDone = true;
                         isWip = false;
                         isRew = false;
-                        row['Final Status'] = 'Done'; // Visual override
+                        row['Final Status'] = 'Done'; 
                     }
 
-                    // 🟢 STRICT URGENCY LOGIC FOR LOCATIONS: 3D Scaling
-                    let scalingStatus = String(row['3D Scaling'] || "").toLowerCase();
-                    row.isDueThisWeek = isDateThisWeekOrOverdue(row['3D Scaling Date'], scalingStatus);
+                    // 🟢 URGENCY LOGIC FOR LOCATIONS: 3D Scaling
+                    row.isDueThisWeek = isDateThisWeekOrOverdue(row['3D Scaling Date'], scaleStat);
 
                     window.globalLocationsData.push(row); 
                     
@@ -1204,7 +1207,7 @@
                     if(!row['Asset Name']) return;
                     
                     row.originalOrder = idx;
-                    // 🟢 STRICT URGENCY LOGIC FOR ASSETS: 3D Asset Ready
+                    // 🟢 URGENCY LOGIC FOR ASSETS: 3D Asset Ready
                     let readyStatus = String(row['3D Asset Ready'] || "").toLowerCase();
                     row.isDueThisWeek = isDateThisWeekOrOverdue(row['3D Asset Ready Date'], readyStatus);
 
@@ -1326,6 +1329,7 @@
                     let assetsDoneShots = 0;
                     
                     let maxRcDateTs = 0;
+                    
                     let validRcDateFound = false;
 
                     // 🟢 URGENCY LOGIC TRACKERS
@@ -1347,12 +1351,14 @@
                             if (rc === 'done' || rc === 'approved' || rc === 'not required' || rc === 'n/a' || rc === 'na') rcDoneShots++;
                             if (as === 'done' || as === 'approved' || as === 'ready' || as === 'cleared') assetsDoneShots++;
 
+                            // Dates tracking
                             let rcD = shot['Recompositing Date'] || "";
                             if(rcD) {
                                 let ts = parseCustomDate(rcD);
                                 if(!isNaN(ts) && ts > maxRcDateTs) { maxRcDateTs = ts; validRcDateFound = true; }
                             }
                             
+                            // Check if ANY specific shot is urgently due for Video Gen
                             let isMoDone = mo === 'done' || mo === 'approved' || mo === 'ready' || mo === 'cleared' || mo === 'not required' || mo === 'n/a' || mo === 'na';
                             let moD = shot['Motion Date'] || "";
                             if(!isMoDone && moD) {
