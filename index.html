@@ -60,6 +60,11 @@
         
         .desc-col { text-align: left !important; font-size: 11px; max-width: 200px; line-height: 1.4; color: #475569; }
         
+        /* 🟢 CLICKABLE LINK STYLING */
+        .drive-link { color: #0284c7; text-decoration: none; border-bottom: 1px solid transparent; transition: all 0.2s ease; display: inline-block; padding-bottom: 1px; }
+        .drive-link:hover { color: #0369a1; border-bottom: 1px solid #0369a1; }
+        .drive-link-icon { font-size: 10px; margin-left: 4px; color: #7dd3fc; }
+        
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 70px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
         .status-done { background-color: #C1E1C1; color: #2E5C2E; } 
         .status-wip { background-color: #FDFD96; color: #7A7A00; }  
@@ -101,6 +106,8 @@
         .team-bar-bg { width: 100%; background-color: #e9ecef; height: 8px; border-radius: 4px; margin-top: 4px; overflow: hidden; }
         .team-bar-fg { height: 100%; background-color: #3b82f6; border-radius: 4px; transition: width 0.5s ease; }
         .team-bar-fg.complete { background-color: #10b981; }
+        
+        .history-table th { top: 0; position: static; box-shadow: none; border-bottom: 1px solid #cbd5e1; } /* Inner table override */
     </style>
 </head>
 <body>
@@ -373,7 +380,23 @@
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
         
-        // 🟢 BULLETPROOF DATE PARSER (Fixes JS NaNs for DD-MMM-YY)
+        // 🟢 DRIVE LINK EXTRACTOR (Looks for column named "Drive Link", "Link", or hunts for a URL)
+        function extractLink(row) {
+            if (row['Drive Link'] && String(row['Drive Link']).trim() !== "") return String(row['Drive Link']).trim();
+            if (row['Link'] && String(row['Link']).trim() !== "") return String(row['Link']).trim();
+            
+            // Fallback: search all cells in the row for a URL
+            let vals = Object.values(row);
+            for (let v of vals) {
+                let strVal = String(v).trim();
+                if (strVal.startsWith('http://') || strVal.startsWith('https://') || strVal.includes('drive.google.com')) {
+                    return strVal;
+                }
+            }
+            return null;
+        }
+
+        // 🟢 BULLETPROOF DATE PARSER
         function parseCustomDate(dateStr) {
             if (!dateStr) return NaN;
             let s = String(dateStr).trim().replace(/'/g, '');
@@ -693,7 +716,6 @@
                 return true;
             });
 
-            // 🟢 STRICT URGENCY FILTER
             if (sortMode === 'this_week') {
                 filteredArray = filteredArray.filter(row => row.isDueThisWeek);
                 filteredArray.sort((a, b) => a.originalOrder - b.originalOrder);
@@ -705,10 +727,15 @@
             filteredArray.forEach(row => {
                 let worldName = String(row['World Name']).trim();
                 let catColor = String(row['Category'] || "").toLowerCase().includes("natural") ? "#2E5C2E" : "#8A2B2B";
-                
+                let urgentAlert = row.isDueThisWeek && sortMode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
+
+                // 🟢 NEW: Extract Drive Link
+                let locLink = extractLink(row);
+                let locNameDisplay = locLink ? `<a href="${locLink}" target="_blank" class="drive-link" title="Open Drive Folder">${worldName} <span class="drive-link-icon">↗</span></a>` : worldName;
+
                 locHtml += `
                 <tr>
-                    <td><strong>${worldName}</strong></td>
+                    <td><strong>${locNameDisplay}</strong> ${urgentAlert}</td>
                     <td><span style="font-size: 11px; color:${catColor}; font-weight: bold;">${row['Category'] || "-"}</span></td>
                     <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
                     <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
@@ -741,7 +768,6 @@
                 return true;
             });
 
-            // 🟢 STRICT URGENCY FILTER
             if (sortMode === 'this_week') {
                 filteredArray = filteredArray.filter(row => row.isDueThisWeek);
                 filteredArray.sort((a, b) => a.originalOrder - b.originalOrder);
@@ -751,9 +777,15 @@
 
             let assetsHtml = "";
             filteredArray.forEach(row => {
+                let urgentAlert = row.isDueThisWeek && sortMode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
+
+                // 🟢 NEW: Extract Drive Link
+                let assetLink = extractLink(row);
+                let assetNameDisplay = assetLink ? `<a href="${assetLink}" target="_blank" class="drive-link" title="Open Drive Folder">${row['Asset Name']} <span class="drive-link-icon">↗</span></a>` : row['Asset Name'];
+
                 assetsHtml += `
                 <tr>
-                    <td><strong>${row['Asset Name']}</strong></td>
+                    <td><strong>${assetNameDisplay}</strong> ${urgentAlert}</td>
                     <td><span style="font-size: 11px; color:#666; font-weight: bold;">${row['Category'] || "-"}</span></td>
                     <td><span style="font-size: 10px; color: #888;">${row['Linked Scenes'] || "-"}</span></td>
                     <td>${getBadgeHTML(row['References'], row['References Date'])}</td>
@@ -778,7 +810,6 @@
             } else if (mode === 'progress') {
                 sortedArray.sort((a, b) => b.progressScore - a.progressScore);
             } else if (mode === 'this_week') {
-                // 🟢 STRICT URGENCY FILTER
                 sortedArray = sortedArray.filter(a => a.isDueThisWeek);
                 sortedArray.sort((a, b) => a.originalOrder - b.originalOrder);
             } else {
@@ -789,10 +820,11 @@
             sortedArray.forEach(s => {
                 let scNum = s.sceneRow['Scene Number'] || s.sceneRow['Scene Number '];
                 let expandBtn = s.shots.length > 0 ? `<button class="expand-btn" onclick="event.stopPropagation(); toggleShots('${s.sceneId}')">View ${s.shots.length} Shots ▼</button>` : '';
-                
+                let urgentAlert = s.isDueThisWeek && mode === 'this_week' ? `<span style="color:#d32f2f; font-size:10px; font-weight:bold; display:block; margin-top:3px;">🚨 URGENT</span>` : "";
+
                 scenesHtml += `
                 <tr class="parent-row" onclick="toggleShots('${s.sceneId}')">
-                    <td><strong>Scene - ${scNum}: ${s.sceneRow['Scene Name'] || ""}</strong> ${expandBtn}</td>
+                    <td><strong>Scene - ${scNum}: ${s.sceneRow['Scene Name'] || ""}</strong> ${expandBtn} ${urgentAlert}</td>
                     <td class="desc-col">${s.sceneRow['Scene Description'] || "-"}</td>
                     <td><strong>${s.sceneRow['Scene Duration'] || "-"}</strong></td>
                     <td class="col-overall-status">${getBadgeHTML(s.sceneRow['scene Status'] || s.sceneRow['Scene Status'], null, false, true)}</td>
@@ -1265,7 +1297,7 @@
 
                     let sceneDurSecs = parseDurationToSeconds(String(s.sceneRow['Scene Duration'] || "0"));
 
-                    // 🟢 INDEPENDENT SCENE LEVEL DURATION TRACKING (STRICTLY FROM SCENE ROW)
+                    // 🟢 INDEPENDENT SCENE LEVEL DURATION TRACKING
                     let stScLow = String(s.sceneRow['Statics'] || "").toLowerCase();
                     if(stScLow === 'done' || stScLow === 'approved' || stScLow === 'ready' || stScLow === 'cleared') { 
                         counts.st_sc.done++; dur.st.done += sceneDurSecs; 
@@ -1294,7 +1326,6 @@
                     let assetsDoneShots = 0;
                     
                     let maxRcDateTs = 0;
-                    
                     let validRcDateFound = false;
 
                     // 🟢 URGENCY LOGIC TRACKERS
@@ -1316,14 +1347,12 @@
                             if (rc === 'done' || rc === 'approved' || rc === 'not required' || rc === 'n/a' || rc === 'na') rcDoneShots++;
                             if (as === 'done' || as === 'approved' || as === 'ready' || as === 'cleared') assetsDoneShots++;
 
-                            // Dates tracking
                             let rcD = shot['Recompositing Date'] || "";
                             if(rcD) {
                                 let ts = parseCustomDate(rcD);
                                 if(!isNaN(ts) && ts > maxRcDateTs) { maxRcDateTs = ts; validRcDateFound = true; }
                             }
                             
-                            // Check if ANY specific shot is urgently due for Video Gen
                             let isMoDone = mo === 'done' || mo === 'approved' || mo === 'ready' || mo === 'cleared' || mo === 'not required' || mo === 'n/a' || mo === 'na';
                             let moD = shot['Motion Date'] || "";
                             if(!isMoDone && moD) {
@@ -1335,7 +1364,6 @@
                         });
                         
                     } else {
-                        // Fallback for sorting logic if no shots exist
                         if(stScLow === 'done' || stScLow === 'approved') stDoneShots++;
                         if(moScLow === 'done' || moScLow === 'approved') moDoneShots++;
                     }
