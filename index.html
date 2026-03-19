@@ -302,7 +302,7 @@
         <div class="sort-banner" style="padding: 15px; margin-bottom: 15px; background-color: #fffbeb; border-color: #fde68a;">
             <div>
                 <h3 style="margin: 0; color: #d97706; font-size: 16px;">📝 Daily Pipeline Notes & Feedback</h3>
-                <p style="margin: 5px 0 0 0; font-size: 12px; color: #b45309;">Live feed of daily updates. Use the column headers below to filter and search exactly what you need.</p>
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: #b45309;">Items with multiple updates are automatically grouped together. Click on any item row to view its entire update history.</p>
             </div>
         </div>
 
@@ -313,7 +313,7 @@
                         <th style="width: 110px; vertical-align:top;">Date<br>
                             <input type="text" id="filter-note-date" class="col-filter" placeholder="Search Date..." onkeyup="renderNotesTable()">
                         </th>
-                        <th style="width: 120px; vertical-align:top;">Type<br>
+                        <th style="width: 110px; vertical-align:top;">Type<br>
                             <select id="filter-note-type" class="col-filter" onchange="renderNotesTable()">
                                 <option value="all">All Types</option>
                                 <option value="scene">Scenes/Shots</option>
@@ -321,16 +321,24 @@
                                 <option value="location">Locations</option>
                             </select>
                         </th>
-                        <th style="width: 180px; vertical-align:top;">Item Name<br>
-                            <input type="text" id="filter-note-item" class="col-filter" placeholder="Search Item..." onkeyup="renderNotesTable()">
+                        <th style="width: 220px; vertical-align:top;">Item Name<br>
+                            <input type="text" id="filter-note-item" class="col-filter" placeholder="Search Item Name..." onkeyup="renderNotesTable()">
                         </th>
-                        <th style="width: 150px; vertical-align:top;">Department<br>
+                        <th style="width: 130px; vertical-align:top;">Department<br>
                             <input type="text" id="filter-note-dept" class="col-filter" placeholder="Search Dept..." onkeyup="renderNotesTable()">
                         </th>
                         <th style="text-align: left; vertical-align:top;">Note / Update<br>
                             <span style="font-size:10px; color:transparent; user-select:none;">-</span>
                         </th>
-                        <th style="width: 160px; vertical-align:top;">Assignee<br>
+                        <th style="width: 100px; vertical-align:top;">Status<br>
+                            <select id="filter-note-status" class="col-filter" onchange="renderNotesTable()">
+                                <option value="all">All</option>
+                                <option value="done">Done</option>
+                                <option value="wip">WIP</option>
+                                <option value="yts">YTS</option>
+                            </select>
+                        </th>
+                        <th style="width: 140px; vertical-align:top;">Assignee<br>
                             <select id="filter-note-assignee" class="col-filter" onchange="renderNotesTable()">
                                 <option value="all">All Members</option>
                             </select>
@@ -338,7 +346,7 @@
                     </tr>
                 </thead>
                 <tbody id="notesTableBody">
-                    <tr><td colspan="6" class="loading-text">Fetching Daily Notes...</td></tr>
+                    <tr><td colspan="7" class="loading-text">Fetching Daily Notes...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -455,7 +463,7 @@
         function applySelectStyle(selectId) {
             let el = document.getElementById(selectId);
             if(!el) return;
-            if (el.value === 'default' || el.value === 'all') {
+            if (el.value === 'default' || el.value === 'all' || el.value === '') {
                 el.style.backgroundColor = "white";
                 el.style.color = "#333";
                 el.style.borderColor = "#ccc";
@@ -474,8 +482,6 @@
         const assetsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=366020038&nocache=${ts}`; 
         const locationsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340&nocache=${ts}`; 
         const teamCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=162642321&nocache=${ts}`; 
-        
-        // 🚨 NEW DAILY NOTES URL INTEGRATED
         const notesCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=469500105&nocache=${ts}`; 
 
         function isDateThisWeekOrOverdue(dateStr, status) {
@@ -667,9 +673,6 @@
             });
         }
 
-        // ==========================================
-        // 🟢 EXCEL-STYLE COLUMN FILTERS ENGINE
-        // ==========================================
         function matchesFilter(val, filterVal) {
             if (filterVal === 'all') return true;
             let lower = String(val || "").trim().toLowerCase();
@@ -687,15 +690,17 @@
             return true;
         }
 
-        // 🟢 DAILY NOTES RENDER ENGINE
+        // 🟢 DAILY NOTES RENDER ENGINE (GROUPED BY ITEM NAME)
         function renderNotesTable() {
             let dateF = document.getElementById('filter-note-date').value.toLowerCase().trim();
             let typeF = document.getElementById('filter-note-type').value.toLowerCase();
             let itemF = document.getElementById('filter-note-item').value.toLowerCase().trim();
             let deptF = document.getElementById('filter-note-dept').value.toLowerCase().trim();
+            let statusF = document.getElementById('filter-note-status').value.toLowerCase();
             let assigneeF = document.getElementById('filter-note-assignee').value.toLowerCase();
 
             applySelectStyle('filter-note-type');
+            applySelectStyle('filter-note-status');
             applySelectStyle('filter-note-assignee');
 
             let filteredArray = window.globalNotesData.filter(row => {
@@ -717,60 +722,119 @@
 
                 let asg = String(row['Assignee'] || row['Author'] || "").toLowerCase();
                 if (assigneeF !== 'all' && asg !== assigneeF) return false;
+                
+                let sts = String(row['Status'] || "YTS").toLowerCase();
+                if (statusF !== 'all' && sts !== statusF) return false;
 
                 return true;
             });
 
-            // Sort newest first
-            filteredArray.sort((a, b) => {
-                let tsA = parseCustomDate(a['Date']);
-                let tsB = parseCustomDate(b['Date']);
+            // 1. Group notes by Item Name
+            let groupedNotes = {};
+            filteredArray.forEach(row => {
+                let itemName = String(row['Item Name'] || "Unknown").trim();
+                if (!groupedNotes[itemName]) groupedNotes[itemName] = [];
+                groupedNotes[itemName].push(row);
+            });
+
+            // 2. Sort notes within each group by Date (Newest first)
+            Object.values(groupedNotes).forEach(group => {
+                group.sort((a, b) => {
+                    let tsA = parseCustomDate(a['Date']);
+                    let tsB = parseCustomDate(b['Date']);
+                    if(isNaN(tsA)) tsA = 0;
+                    if(isNaN(tsB)) tsB = 0;
+                    return tsB - tsA; // descending
+                });
+            });
+
+            // 3. Sort groups by the date of their most recent note
+            let sortedGroups = Object.keys(groupedNotes).map(key => {
+                return { itemName: key, notes: groupedNotes[key] };
+            });
+            sortedGroups.sort((a, b) => {
+                let tsA = parseCustomDate(a.notes[0]['Date']);
+                let tsB = parseCustomDate(b.notes[0]['Date']);
                 if(isNaN(tsA)) tsA = 0;
                 if(isNaN(tsB)) tsB = 0;
-                return tsB - tsA; 
+                return tsB - tsA;
             });
 
             let notesHtml = "";
-            filteredArray.forEach(row => {
-                let dateStr = row['Date'] || "-";
-                let typeStr = row['Type'] || "-";
+            let noteIdx = 0;
+
+            sortedGroups.forEach(group => {
+                let latestNote = group.notes[0];
+                let dateStr = latestNote['Date'] || "-";
+                let typeStr = latestNote['Type'] || "-";
                 
                 let typeColor = "#e2e8f0"; let textColor = "#475569";
                 if(typeStr.toLowerCase().includes('scene') || typeStr.toLowerCase().includes('shot')) { typeColor = "#dbeafe"; textColor = "#1e40af"; }
                 if(typeStr.toLowerCase().includes('asset') || typeStr.toLowerCase().includes('prop')) { typeColor = "#fef3c7"; textColor = "#b45309"; }
                 if(typeStr.toLowerCase().includes('loc') || typeStr.toLowerCase().includes('world')) { typeColor = "#dcfce7"; textColor = "#065f46"; }
 
-                let asgVal = String(row['Assignee'] || row['Author'] || "").trim();
-                let customSelect = `<select class="assignee-dropdown"><option value="">Unassigned</option>`;
+                let asgVal = String(latestNote['Assignee'] || latestNote['Author'] || "").trim();
+                let customSelect = `<select class="assignee-dropdown" onclick="event.stopPropagation();"><option value="">Unassigned</option>`;
                 let found = false;
-                
                 window.globalTeamMembers.forEach(m => {
                     let sel = (m.toLowerCase() === asgVal.toLowerCase()) ? "selected" : "";
                     if(sel) found = true;
                     customSelect += `<option value="${m}" ${sel}>${m}</option>`;
                 });
-                
                 if(asgVal && !found) {
                     customSelect += `<option value="${asgVal}" selected>${asgVal}</option>`;
                 }
                 customSelect += `</select>`;
 
+                let statusVal = String(latestNote['Status'] || "YTS").toUpperCase();
+                let statusBadge = `<span class="status-badge status-pending">${statusVal}</span>`;
+                if(statusVal === 'DONE') statusBadge = `<span class="status-badge status-done">DONE</span>`;
+                else if(statusVal === 'WIP') statusBadge = `<span class="status-badge status-wip">WIP</span>`;
+
+                let expandBtn = group.notes.length > 1 ? `<button class="expand-btn" onclick="event.stopPropagation(); toggleShots('note-grp-${noteIdx}')">View ${group.notes.length - 1} Older Updates ▼</button>` : '';
+
+                // PARENT ROW (Latest Update)
                 notesHtml += `
-                <tr class="parent-row">
+                <tr class="parent-row" onclick="toggleShots('note-grp-${noteIdx}')" style="cursor: pointer;">
                     <td class="note-date">${dateStr}</td>
                     <td><span style="background:${typeColor}; color:${textColor}; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:bold; letter-spacing:0.5px; text-transform:uppercase;">${typeStr}</span></td>
-                    <td style="font-weight:bold; color:#0f172a;">${row['Item Name'] || "-"}</td>
-                    <td style="font-size: 11px; font-weight: 600; color: #64748b;">${row['Department'] || "-"}</td>
-                    <td class="note-text">${row['Note / Update'] || "-"}</td>
+                    <td style="font-weight:bold; color:#0f172a;">${group.itemName} ${expandBtn}</td>
+                    <td style="font-size: 11px; font-weight: 600; color: #64748b;">${latestNote['Department'] || "-"}</td>
+                    <td class="note-text">${latestNote['Note / Update'] || "-"}</td>
+                    <td>${statusBadge}</td>
                     <td>${customSelect}</td>
                 </tr>`;
+
+                // CHILD ROWS (History)
+                if (group.notes.length > 1) {
+                    group.notes.forEach((note, i) => {
+                        if (i === 0) return; // Skip latest since it's already rendered
+                        
+                        let oldSVal = String(note['Status'] || "YTS").toUpperCase();
+                        let oldSBadge = `<span class="status-badge status-pending">${oldSVal}</span>`;
+                        if(oldSVal === 'DONE') oldSBadge = `<span class="status-badge status-done">DONE</span>`;
+                        else if(oldSVal === 'WIP') oldSBadge = `<span class="status-badge status-wip">WIP</span>`;
+
+                        notesHtml += `
+                        <tr class="shot-row note-grp-${noteIdx}">
+                            <td class="shot-indent note-date">${note['Date'] || "-"}</td>
+                            <td></td>
+                            <td style="color:#64748b; font-size:11px;">↳ Previous Update</td>
+                            <td style="font-size: 11px; font-weight: 600; color: #94a3b8;">${note['Department'] || "-"}</td>
+                            <td class="note-text" style="color:#64748b;">${note['Note / Update'] || "-"}</td>
+                            <td>${oldSBadge}</td>
+                            <td><span style="font-size:11px; color:#64748b;"><i class="fa-solid fa-user" style="margin-right:4px;"></i> ${note['Assignee'] || note['Author'] || "Unknown"}</span></td>
+                        </tr>`;
+                    });
+                }
+                noteIdx++;
             });
 
             if (notesHtml === "") {
                 if (window.globalNotesData.length === 0) {
-                    notesHtml = `<tr><td colspan="6" class="loading-text">No Daily Notes found.</td></tr>`;
+                    notesHtml = `<tr><td colspan="7" class="loading-text">No Daily Notes found.</td></tr>`;
                 } else {
-                    notesHtml = `<tr><td colspan="6" class="loading-text">No notes match your active filters.</td></tr>`;
+                    notesHtml = `<tr><td colspan="7" class="loading-text">No notes match your active filters.</td></tr>`;
                 }
             }
             document.getElementById('notesTableBody').innerHTML = notesHtml;
@@ -1261,7 +1325,6 @@
                     let isWip = status === 'wip' || status === 'progress' || status === 'in progress';
                     let isRew = status === 'rework' || status === 'feedback';
 
-                    // If both are NA, force it to completely Done
                     if (scaleNa && detailNa) {
                         isDone = true;
                         isWip = false;
