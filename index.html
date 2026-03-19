@@ -99,14 +99,20 @@
         .sort-select { padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; color: #333; font-size: 14px; cursor: pointer; transition: all 0.2s ease; outline: none; background-color: white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
         .sort-select:hover { border-color: #ff9800; }
         
-        .col-filter { width: 100%; margin-top: 6px; padding: 4px 2px; font-size: 10px; font-weight: bold; color: #475569; border: 1px solid #cbd5e1; border-radius: 4px; background-color: white; outline: none; cursor: pointer;}
-        .col-filter:hover { border-color: #94a3b8; }
+        .col-filter { width: 100%; margin-top: 6px; padding: 4px 6px; font-size: 11px; font-weight: bold; color: #475569; border: 1px solid #cbd5e1; border-radius: 4px; background-color: white; outline: none; cursor: pointer; box-sizing: border-box;}
+        .col-filter:hover, .col-filter:focus { border-color: #3b82f6; }
         
         .team-bar-bg { width: 100%; background-color: #e9ecef; height: 8px; border-radius: 4px; margin-top: 4px; overflow: hidden; }
         .team-bar-fg { height: 100%; background-color: #3b82f6; border-radius: 4px; transition: width 0.5s ease; }
         .team-bar-fg.complete { background-color: #10b981; }
         
         .history-table th { top: 0; position: static; box-shadow: none; border-bottom: 1px solid #cbd5e1; } 
+        
+        /* 🟢 NOTES TAB SPECIFIC CSS */
+        .note-text { text-align: left !important; font-size: 13px; color: #334155; max-width: 400px; line-height: 1.5; }
+        .note-date { font-weight: bold; color: #0f172a; }
+        .assignee-dropdown { padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px; color: #1e3a8a; background: #eff6ff; font-weight: 700; width: 100%; outline: none; cursor: pointer; transition: all 0.2s ease;}
+        .assignee-dropdown:hover { border-color: #93c5fd; background: #dbeafe;}
     </style>
 </head>
 <body>
@@ -126,57 +132,34 @@
 
     <div class="dashboard">
         <div class="card" style="border-top-color: #FFB7B2;">
-            <h3>Storyboard (Scenes)</h3>
-            <div class="number" id="card-sb">0 / 104</div>
-            <div class="mini-stats" id="mini-sb"></div>
+            <h3>Storyboard (Scenes)</h3><div class="number" id="card-sb">0 / 104</div><div class="mini-stats" id="mini-sb"></div>
         </div>
         <div class="card" style="border-top-color: #FFDAC1;">
-            <h3>World/Locs</h3>
-            <div class="number" id="card-wd">0 / 0</div>
-            <div class="mini-stats" id="mini-wd"></div>
+            <h3>World/Locs</h3><div class="number" id="card-wd">0 / 0</div><div class="mini-stats" id="mini-wd"></div>
         </div>
         <div class="card" style="border-top-color: #FDFD96;">
-            <h3>Static (Scenes)</h3>
-            <div class="number" id="card-st-sc">0 / 104</div>
-            <div class="mini-stats" id="mini-st-sc"></div>
+            <h3>Static (Scenes)</h3><div class="number" id="card-st-sc">0 / 104</div><div class="mini-stats" id="mini-st-sc"></div>
         </div>
         <div class="card" style="border-top-color: #FDFD96;">
-            <h3>Static (Shots)</h3>
-            <div class="number" id="card-st">0 / 3120</div>
-            <div class="mini-stats" id="mini-st"></div>
+            <h3>Static (Shots)</h3><div class="number" id="card-st">0 / 3120</div><div class="mini-stats" id="mini-st"></div>
         </div>
         <div class="card card-highlight-st">
-            <h3>Static Duration</h3>
-            <div class="number" id="card-st-dur" style="color: #7A7A00;">0m</div>
-            <div class="target">Out of 120 Mins</div>
-            <div class="mini-stats" id="mini-st-dur"></div>
-        </div>
-
-        <div class="card" style="border-top-color: #B4E1FF;">
-            <h3>Video Gen (Scenes)</h3>
-            <div class="number" id="card-mo-sc">0 / 104</div>
-            <div class="mini-stats" id="mini-mo-sc"></div>
+            <h3>Static Duration</h3><div class="number" id="card-st-dur" style="color: #7A7A00;">0m</div><div class="target">Out of 120 Mins</div><div class="mini-stats" id="mini-st-dur"></div>
         </div>
         <div class="card" style="border-top-color: #B4E1FF;">
-            <h3>Video Gen (Shots)</h3>
-            <div class="number" id="card-mo">0 / 3120</div>
-            <div class="mini-stats" id="mini-mo"></div>
+            <h3>Video Gen (Scenes)</h3><div class="number" id="card-mo-sc">0 / 104</div><div class="mini-stats" id="mini-mo-sc"></div>
+        </div>
+        <div class="card" style="border-top-color: #B4E1FF;">
+            <h3>Video Gen (Shots)</h3><div class="number" id="card-mo">0 / 3120</div><div class="mini-stats" id="mini-mo"></div>
         </div>
         <div class="card card-highlight-mo">
-            <h3>Video Gen Duration</h3>
-            <div class="number" id="card-mo-dur" style="color: #2c5282;">0m</div>
-            <div class="target">Out of 120 Mins</div>
-            <div class="mini-stats" id="mini-mo-dur"></div>
+            <h3>Video Gen Duration</h3><div class="number" id="card-mo-dur" style="color: #2c5282;">0m</div><div class="target">Out of 120 Mins</div><div class="mini-stats" id="mini-mo-dur"></div>
         </div>
         <div class="card" style="border-top-color: #C1E1C1;">
-            <h3>MoCap Shoot</h3>
-            <div class="number" id="card-mc">0 / 104</div>
-            <div class="mini-stats" id="mini-mc"></div>
+            <h3>MoCap Shoot</h3><div class="number" id="card-mc">0 / 104</div><div class="mini-stats" id="mini-mc"></div>
         </div>
         <div class="card" style="border-top-color: #AEC6CF;">
-            <h3>Recompositing</h3>
-            <div class="number" id="card-rc">0 / 3120</div>
-            <div class="mini-stats" id="mini-rc"></div>
+            <h3>Recompositing</h3><div class="number" id="card-rc">0 / 3120</div><div class="mini-stats" id="mini-rc"></div>
         </div>
     </div>
 
@@ -197,6 +180,7 @@
         <button class="tab" onclick="switchTab('characters')">🦸‍♂️ Characters & Props</button>
         <button class="tab" onclick="switchTab('locations')">🌍 Worlds & Locations</button>
         <button class="tab" onclick="switchTab('team')">👥 Department Workloads</button>
+        <button class="tab" onclick="switchTab('notes')" style="background-color: #fef3c7; color: #d97706;"><i class="fa-solid fa-pen"></i> 📝 Daily Notes</button>
     </div>
 
     <div id="funnel" class="tab-content active">
@@ -256,37 +240,12 @@
                         <th style="width: 220px; vertical-align:top;">Asset Name</th>
                         <th style="vertical-align:top;">Category</th>
                         <th style="vertical-align:top;">Linked Scenes</th>
-                        
-                        <th style="width:110px; vertical-align:top;">References
-                            <select id="filter-asset-ref" class="col-filter" onchange="renderAssetsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">Sketches
-                            <select id="filter-asset-sketch" class="col-filter" onchange="renderAssetsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">AI Asset
-                            <select id="filter-asset-ai" class="col-filter" onchange="renderAssetsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">3D Outsourced
-                            <select id="filter-asset-out" class="col-filter" onchange="renderAssetsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">3D Asset Ready
-                            <select id="filter-asset-ready" class="col-filter" onchange="renderAssetsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">Casting
-                            <select id="filter-asset-cast" class="col-filter" onchange="renderAssetsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
+                        <th style="width:110px; vertical-align:top;">References<select id="filter-asset-ref" class="col-filter" onchange="renderAssetsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">Sketches<select id="filter-asset-sketch" class="col-filter" onchange="renderAssetsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">AI Asset<select id="filter-asset-ai" class="col-filter" onchange="renderAssetsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">3D Outsourced<select id="filter-asset-out" class="col-filter" onchange="renderAssetsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">3D Asset Ready<select id="filter-asset-ready" class="col-filter" onchange="renderAssetsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">Casting<select id="filter-asset-cast" class="col-filter" onchange="renderAssetsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
                     </tr>
                 </thead>
                 <tbody id="assetsTableBody">
@@ -314,37 +273,12 @@
                         <th style="width: 220px; vertical-align:top;">World Name</th>
                         <th style="vertical-align:top;">Category</th>
                         <th style="vertical-align:top;">Linked Scenes</th>
-                        
-                        <th style="width:110px; vertical-align:top;">References
-                            <select id="filter-loc-ref" class="col-filter" onchange="renderLocationsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">Sketches
-                            <select id="filter-loc-sketch" class="col-filter" onchange="renderLocationsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">AI Asset
-                            <select id="filter-loc-ai" class="col-filter" onchange="renderLocationsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">3D Scaling
-                            <select id="filter-loc-scale" class="col-filter" onchange="renderLocationsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">3D Details
-                            <select id="filter-loc-detail" class="col-filter" onchange="renderLocationsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
-                        <th style="width:110px; vertical-align:top;">Final Status
-                            <select id="filter-loc-final" class="col-filter" onchange="renderLocationsTable()">
-                                <option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option>
-                            </select>
-                        </th>
+                        <th style="width:110px; vertical-align:top;">References<select id="filter-loc-ref" class="col-filter" onchange="renderLocationsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">Sketches<select id="filter-loc-sketch" class="col-filter" onchange="renderLocationsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">AI Asset<select id="filter-loc-ai" class="col-filter" onchange="renderLocationsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">3D Scaling<select id="filter-loc-scale" class="col-filter" onchange="renderLocationsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">3D Details<select id="filter-loc-detail" class="col-filter" onchange="renderLocationsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
+                        <th style="width:110px; vertical-align:top;">Final Status<select id="filter-loc-final" class="col-filter" onchange="renderLocationsTable()"><option value="all">All Status</option><option value="done">✔ Done</option><option value="wip">⏳ WIP</option><option value="rework">✖ Rework</option><option value="pending">Pending</option></select></th>
                     </tr>
                 </thead>
                 <tbody id="locationsTableBody">
@@ -364,6 +298,52 @@
         </div>
     </div>
 
+    <div id="notes" class="tab-content" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+        <div class="sort-banner" style="padding: 15px; margin-bottom: 15px; background-color: #fffbeb; border-color: #fde68a;">
+            <div>
+                <h3 style="margin: 0; color: #d97706; font-size: 16px;">📝 Daily Pipeline Notes & Feedback</h3>
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: #b45309;">Live feed of daily updates. Use the column headers below to filter and search exactly what you need.</p>
+            </div>
+        </div>
+
+        <div class="table-container" style="min-width: unset;">
+            <table style="min-width: 1000px;">
+                <thead>
+                    <tr>
+                        <th style="width: 110px; vertical-align:top;">Date<br>
+                            <input type="text" id="filter-note-date" class="col-filter" placeholder="Search Date..." onkeyup="renderNotesTable()">
+                        </th>
+                        <th style="width: 120px; vertical-align:top;">Type<br>
+                            <select id="filter-note-type" class="col-filter" onchange="renderNotesTable()">
+                                <option value="all">All Types</option>
+                                <option value="scene">Scenes/Shots</option>
+                                <option value="asset">Assets</option>
+                                <option value="location">Locations</option>
+                            </select>
+                        </th>
+                        <th style="width: 180px; vertical-align:top;">Item Name<br>
+                            <input type="text" id="filter-note-item" class="col-filter" placeholder="Search Item..." onkeyup="renderNotesTable()">
+                        </th>
+                        <th style="width: 150px; vertical-align:top;">Department<br>
+                            <input type="text" id="filter-note-dept" class="col-filter" placeholder="Search Dept..." onkeyup="renderNotesTable()">
+                        </th>
+                        <th style="text-align: left; vertical-align:top;">Note / Update<br>
+                            <span style="font-size:10px; color:transparent; user-select:none;">-</span>
+                        </th>
+                        <th style="width: 160px; vertical-align:top;">Assignee<br>
+                            <select id="filter-note-assignee" class="col-filter" onchange="renderNotesTable()">
+                                <option value="all">All Members</option>
+                            </select>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="notesTableBody">
+                    <tr><td colspan="6" class="loading-text">Fetching Daily Notes...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <script>
         // ==========================================
         // ⚙️ STAGGERED SCHEDULE CONFIGURATION
@@ -375,20 +355,19 @@
         window.globalScenesArray = [];
         window.globalAssetsData = [];
         window.globalLocationsData = [];
+        window.globalNotesData = []; 
+        window.globalTeamMembers = []; 
 
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('dynamicDate').innerText = new Date().toLocaleDateString('en-US', options);
         
-        // 🟢 AGGRESSIVE LINK EXTRACTOR (Hunts for URLs in ANY column in the row)
         function extractLink(row) {
             if (row['Drive Link'] && String(row['Drive Link']).trim() !== "") return String(row['Drive Link']).trim();
             if (row['Link'] && String(row['Link']).trim() !== "") return String(row['Link']).trim();
             if (row['URL'] && String(row['URL']).trim() !== "") return String(row['URL']).trim();
             
             let vals = Object.values(row);
-            if (row['__parsed_extra']) {
-                vals = vals.concat(row['__parsed_extra']);
-            }
+            if (row['__parsed_extra']) { vals = vals.concat(row['__parsed_extra']); }
             
             const urlRegex = /(https?:\/\/[^\s]+|drive\.google\.com[^\s]+)/i;
             for (let v of vals) {
@@ -476,7 +455,7 @@
         function applySelectStyle(selectId) {
             let el = document.getElementById(selectId);
             if(!el) return;
-            if (el.value === 'default') {
+            if (el.value === 'default' || el.value === 'all') {
                 el.style.backgroundColor = "white";
                 el.style.color = "#333";
                 el.style.borderColor = "#ccc";
@@ -495,14 +474,17 @@
         const assetsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=366020038&nocache=${ts}`; 
         const locationsCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=564966340&nocache=${ts}`; 
         const teamCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=162642321&nocache=${ts}`; 
+        
+        // 🚨 NEW DAILY NOTES URL INTEGRATED
+        const notesCsvUrl = `https://docs.google.com/spreadsheets/d/1Cy8dojw8UT5NlbfPNYyYa_kt8UwqI9XGwDBu7h27nIM/export?format=csv&gid=469500105&nocache=${ts}`; 
 
         function isDateThisWeekOrOverdue(dateStr, status) {
             if (!dateStr) return false;
             let lower = String(status || "").trim().toLowerCase();
             if (lower === "done" || lower === "approved" || lower === "ready" || lower === "cleared" || lower === "not required" || lower === "n/a" || lower === "na") return false;
             
-            let ts = parseCustomDate(dateStr);
-            if (isNaN(ts)) return false; 
+            let tsVal = parseCustomDate(dateStr);
+            if (isNaN(tsVal)) return false; 
             
             let today = new Date();
             today.setHours(0,0,0,0);
@@ -510,7 +492,7 @@
             let nextWeek = new Date(today);
             nextWeek.setDate(today.getDate() + 7);
             
-            return ts <= nextWeek.getTime();
+            return tsVal <= nextWeek.getTime();
         }
 
         function isOverdue(dateStr, status) {
@@ -518,12 +500,12 @@
             let lower = (status || "").trim().toLowerCase();
             if (lower === "done" || lower === "approved" || lower === "ready" || lower === "cleared" || lower === "not required" || lower === "n/a" || lower === "na") return false;
             
-            let ts = parseCustomDate(dateStr);
-            if (isNaN(ts)) return false; 
+            let tsVal = parseCustomDate(dateStr);
+            if (isNaN(tsVal)) return false; 
             
             let today = new Date();
             today.setHours(0,0,0,0);
-            return ts < today.getTime();
+            return tsVal < today.getTime();
         }
 
         function getBadgeHTML(status, dateStr, isGate = false, isSceneStatus = false) {
@@ -585,9 +567,9 @@
                 if (dateColumnName && shot[dateColumnName]) {
                     let dStr = shot[dateColumnName].trim();
                     if (dStr) {
-                        let ts = parseCustomDate(dStr);
-                        if (!isNaN(ts)) {
-                            if (!maxDateTs || ts > maxDateTs) { maxDateTs = ts; latestDateStr = dStr; }
+                        let tsVal = parseCustomDate(dStr);
+                        if (!isNaN(tsVal)) {
+                            if (!maxDateTs || tsVal > maxDateTs) { maxDateTs = tsVal; latestDateStr = dStr; }
                         }
                     }
                 }
@@ -661,6 +643,7 @@
 
         function fetchCSV(url, useHeader = true) {
             return new Promise((resolve) => {
+                if(!url || url.trim() === "") { resolve([]); return; }
                 Papa.parse(url, { 
                     download: true, 
                     header: useHeader,
@@ -702,6 +685,95 @@
             if (filterVal === 'rework') return isRew;
             if (filterVal === 'pending') return isPending;
             return true;
+        }
+
+        // 🟢 DAILY NOTES RENDER ENGINE
+        function renderNotesTable() {
+            let dateF = document.getElementById('filter-note-date').value.toLowerCase().trim();
+            let typeF = document.getElementById('filter-note-type').value.toLowerCase();
+            let itemF = document.getElementById('filter-note-item').value.toLowerCase().trim();
+            let deptF = document.getElementById('filter-note-dept').value.toLowerCase().trim();
+            let assigneeF = document.getElementById('filter-note-assignee').value.toLowerCase();
+
+            applySelectStyle('filter-note-type');
+            applySelectStyle('filter-note-assignee');
+
+            let filteredArray = window.globalNotesData.filter(row => {
+                let d = String(row['Date'] || "").toLowerCase();
+                if (dateF && !d.includes(dateF)) return false;
+
+                let t = String(row['Type'] || "").toLowerCase();
+                if (typeF !== 'all') {
+                    if (typeF === 'scene' && !(t.includes('scene') || t.includes('shot'))) return false;
+                    if (typeF === 'asset' && !(t.includes('asset') || t.includes('prop'))) return false;
+                    if (typeF === 'location' && !(t.includes('loc') || t.includes('world'))) return false;
+                }
+
+                let itm = String(row['Item Name'] || "").toLowerCase();
+                if (itemF && !itm.includes(itemF)) return false;
+
+                let dep = String(row['Department'] || "").toLowerCase();
+                if (deptF && !dep.includes(deptF)) return false;
+
+                let asg = String(row['Assignee'] || row['Author'] || "").toLowerCase();
+                if (assigneeF !== 'all' && asg !== assigneeF) return false;
+
+                return true;
+            });
+
+            // Sort newest first
+            filteredArray.sort((a, b) => {
+                let tsA = parseCustomDate(a['Date']);
+                let tsB = parseCustomDate(b['Date']);
+                if(isNaN(tsA)) tsA = 0;
+                if(isNaN(tsB)) tsB = 0;
+                return tsB - tsA; 
+            });
+
+            let notesHtml = "";
+            filteredArray.forEach(row => {
+                let dateStr = row['Date'] || "-";
+                let typeStr = row['Type'] || "-";
+                
+                let typeColor = "#e2e8f0"; let textColor = "#475569";
+                if(typeStr.toLowerCase().includes('scene') || typeStr.toLowerCase().includes('shot')) { typeColor = "#dbeafe"; textColor = "#1e40af"; }
+                if(typeStr.toLowerCase().includes('asset') || typeStr.toLowerCase().includes('prop')) { typeColor = "#fef3c7"; textColor = "#b45309"; }
+                if(typeStr.toLowerCase().includes('loc') || typeStr.toLowerCase().includes('world')) { typeColor = "#dcfce7"; textColor = "#065f46"; }
+
+                let asgVal = String(row['Assignee'] || row['Author'] || "").trim();
+                let customSelect = `<select class="assignee-dropdown"><option value="">Unassigned</option>`;
+                let found = false;
+                
+                window.globalTeamMembers.forEach(m => {
+                    let sel = (m.toLowerCase() === asgVal.toLowerCase()) ? "selected" : "";
+                    if(sel) found = true;
+                    customSelect += `<option value="${m}" ${sel}>${m}</option>`;
+                });
+                
+                if(asgVal && !found) {
+                    customSelect += `<option value="${asgVal}" selected>${asgVal}</option>`;
+                }
+                customSelect += `</select>`;
+
+                notesHtml += `
+                <tr class="parent-row">
+                    <td class="note-date">${dateStr}</td>
+                    <td><span style="background:${typeColor}; color:${textColor}; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:bold; letter-spacing:0.5px; text-transform:uppercase;">${typeStr}</span></td>
+                    <td style="font-weight:bold; color:#0f172a;">${row['Item Name'] || "-"}</td>
+                    <td style="font-size: 11px; font-weight: 600; color: #64748b;">${row['Department'] || "-"}</td>
+                    <td class="note-text">${row['Note / Update'] || "-"}</td>
+                    <td>${customSelect}</td>
+                </tr>`;
+            });
+
+            if (notesHtml === "") {
+                if (window.globalNotesData.length === 0) {
+                    notesHtml = `<tr><td colspan="6" class="loading-text">No Daily Notes found.</td></tr>`;
+                } else {
+                    notesHtml = `<tr><td colspan="6" class="loading-text">No notes match your active filters.</td></tr>`;
+                }
+            }
+            document.getElementById('notesTableBody').innerHTML = notesHtml;
         }
 
         function renderLocationsTable() {
@@ -960,6 +1032,17 @@
                 }
             }
 
+            // 🟢 POPULATE GLOBAL TEAM MEMBERS FOR NOTES DROPDOWN
+            window.globalTeamMembers = Object.keys(members).sort();
+            let asgFilt = document.getElementById('filter-note-assignee');
+            if(asgFilt) {
+                let opts = '<option value="all">All Members</option>';
+                window.globalTeamMembers.forEach(m => {
+                    opts += `<option value="${m.toLowerCase()}">${m}</option>`;
+                });
+                asgFilt.innerHTML = opts;
+            }
+
             let depts = {};
             Object.values(members).forEach(m => {
                 if (!depts[m.dept]) depts[m.dept] = [];
@@ -1112,15 +1195,24 @@
                 let teamFetchPromise = teamCsvUrl && teamCsvUrl.trim() !== "" 
                     ? fetchCSV(teamCsvUrl, false) 
                     : Promise.resolve([]);
+                    
+                let notesFetchPromise = notesCsvUrl && notesCsvUrl.trim() !== "" 
+                    ? fetchCSV(notesCsvUrl, true) 
+                    : Promise.resolve([]);
 
-                const [scenesData, assetsData, locationsData, teamData] = await Promise.all([
+                const [scenesData, assetsData, locationsData, teamData, notesData] = await Promise.all([
                     fetchCSV(scenesCsvUrl, true),
                     fetchCSV(assetsCsvUrl, true),
                     fetchCSV(locationsCsvUrl, true),
-                    teamFetchPromise
+                    teamFetchPromise,
+                    notesFetchPromise
                 ]);
 
                 processTeamData2D(teamData);
+                
+                // 🟢 Render Notes after Team members are loaded
+                window.globalNotesData = notesData;
+                renderNotesTable();
 
                 window.globalLocationsData = [];
                 window.globalAssetsData = [];
@@ -1177,7 +1269,6 @@
                         row['Final Status'] = 'Done'; 
                     }
 
-                    // 🟢 URGENCY LOGIC FOR LOCATIONS: 3D Scaling
                     row.isDueThisWeek = isDateThisWeekOrOverdue(row['3D Scaling Date'], scaleStat);
 
                     window.globalLocationsData.push(row); 
@@ -1207,7 +1298,6 @@
                     if(!row['Asset Name']) return;
                     
                     row.originalOrder = idx;
-                    // 🟢 URGENCY LOGIC FOR ASSETS: 3D Asset Ready
                     let readyStatus = String(row['3D Asset Ready'] || "").toLowerCase();
                     row.isDueThisWeek = isDateThisWeekOrOverdue(row['3D Asset Ready Date'], readyStatus);
 
@@ -1300,7 +1390,6 @@
 
                     let sceneDurSecs = parseDurationToSeconds(String(s.sceneRow['Scene Duration'] || "0"));
 
-                    // 🟢 INDEPENDENT SCENE LEVEL DURATION TRACKING
                     let stScLow = String(s.sceneRow['Statics'] || "").toLowerCase();
                     if(stScLow === 'done' || stScLow === 'approved' || stScLow === 'ready' || stScLow === 'cleared') { 
                         counts.st_sc.done++; dur.st.done += sceneDurSecs; 
@@ -1323,20 +1412,12 @@
                         counts.mo_sc.rew++; dur.mo.rew += sceneDurSecs; 
                     }
 
-                    let stDoneShots = 0;
-                    let moDoneShots = 0;
-                    let rcDoneShots = 0;
-                    let assetsDoneShots = 0;
-                    
-                    let maxRcDateTs = 0;
-                    
-                    let validRcDateFound = false;
+                    let stDoneShots = 0; let moDoneShots = 0; let rcDoneShots = 0; let assetsDoneShots = 0;
+                    let maxRcDateTs = 0; let validRcDateFound = false;
 
-                    // 🟢 URGENCY LOGIC TRACKERS
                     s.isDueThisWeek = false;
                     let nextWeek = new Date(today);
                     nextWeek.setDate(today.getDate() + 7);
-                    
                     let minIncompleteMoDateTs = Infinity;
 
                     if(s.shots.length > 0) {
@@ -1351,24 +1432,19 @@
                             if (rc === 'done' || rc === 'approved' || rc === 'not required' || rc === 'n/a' || rc === 'na') rcDoneShots++;
                             if (as === 'done' || as === 'approved' || as === 'ready' || as === 'cleared') assetsDoneShots++;
 
-                            // Dates tracking
                             let rcD = shot['Recompositing Date'] || "";
                             if(rcD) {
                                 let ts = parseCustomDate(rcD);
                                 if(!isNaN(ts) && ts > maxRcDateTs) { maxRcDateTs = ts; validRcDateFound = true; }
                             }
                             
-                            // Check if ANY specific shot is urgently due for Video Gen
                             let isMoDone = mo === 'done' || mo === 'approved' || mo === 'ready' || mo === 'cleared' || mo === 'not required' || mo === 'n/a' || mo === 'na';
                             let moD = shot['Motion Date'] || "";
                             if(!isMoDone && moD) {
                                 let tsMo = parseCustomDate(moD);
-                                if(!isNaN(tsMo) && tsMo < minIncompleteMoDateTs) { 
-                                    minIncompleteMoDateTs = tsMo; 
-                                }
+                                if(!isNaN(tsMo) && tsMo < minIncompleteMoDateTs) { minIncompleteMoDateTs = tsMo; }
                             }
                         });
-                        
                     } else {
                         if(stScLow === 'done' || stScLow === 'approved') stDoneShots++;
                         if(moScLow === 'done' || moScLow === 'approved') moDoneShots++;
@@ -1387,14 +1463,10 @@
                     s.completionTs = validRcDateFound ? maxRcDateTs : Infinity;
                     s.readinessScore = (sbDone ? 30 : 0) + (wdDone ? 30 : 0) + ((assetsDoneShots/totalS) * 40);
                     s.progressScore = ((rcDoneShots/totalS) * 1000) + (mcDone ? 500 : 0) + ((moDoneShots/totalS) * 100) + ((stDoneShots/totalS) * 10);
-                    
                     s.originalOrder = sceneOrderIdx++;
 
-                    // 🟢 STRICT URGENCY LOGIC FOR SCENES: Video Gen (Motion)
                     if (minIncompleteMoDateTs !== Infinity) {
-                        if (minIncompleteMoDateTs <= nextWeek.getTime()) {
-                            s.isDueThisWeek = true;
-                        }
+                        if (minIncompleteMoDateTs <= nextWeek.getTime()) s.isDueThisWeek = true;
                     } else if (s.sceneRow['Motion Date']) {
                         let ts = parseCustomDate(s.sceneRow['Motion Date']);
                         let stat = String(s.sceneRow['Motion'] || "").toLowerCase();
@@ -1403,7 +1475,6 @@
                             s.isDueThisWeek = true;
                         }
                     }
-
                     window.globalScenesArray.push(s);
                 });
 
@@ -1425,7 +1496,6 @@
                     rc: Math.round(activeRcShots * compProgress) 
                 };
 
-                // --- ROW 1 UI CARDS ---
                 document.getElementById('card-sb').innerText = `${counts.sb.done} / ${finalTotalScenes}`;
                 document.getElementById('mini-sb').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.sb.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.sb.wip}</span>`;
 
@@ -1441,7 +1511,6 @@
                 document.getElementById('card-st-dur').innerText = formatDuration(dur.st.done);
                 document.getElementById('mini-st-dur').innerHTML = `<span class="stat-pill pill-appr">✔ ${formatDuration(dur.st.done)}</span> <span class="stat-pill pill-wip">⏳ ${formatDuration(dur.st.wip)}</span> <span class="stat-pill pill-rew">↻ ${formatDuration(dur.st.rew)}</span>`;
 
-                // --- ROW 2 UI CARDS ---
                 document.getElementById('card-mo-sc').innerText = `${counts.mo_sc.done} / ${finalTotalScenes}`;
                 document.getElementById('mini-mo-sc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.mo_sc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.mo_sc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.mo_sc.rew}</span>`;
 
@@ -1457,7 +1526,6 @@
                 document.getElementById('card-rc').innerText = `${counts.rc.done} / ${activeRcShots}`;
                 document.getElementById('mini-rc').innerHTML = `<span class="stat-pill pill-appr">✔ ${counts.rc.done}</span> <span class="stat-pill pill-wip">⏳ ${counts.rc.wip}</span> <span class="stat-pill pill-rew">↻ ${counts.rc.rew}</span>`;
 
-                // 🟢 RESTORED PROGRESS CHART 
                 window.pipelineChart.data.datasets[0].data = [req.sb, req.wd, req.st, req.mo, req.mc, req.rc];
                 window.pipelineChart.data.datasets[1].data = [counts.sb.done, locStatsTracker.done, counts.st.done, counts.mo.done, counts.mc.done, counts.rc.done];
                 window.pipelineChart.update();
